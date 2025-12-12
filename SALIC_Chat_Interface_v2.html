@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALIC Financial Intelligence - CFG Ukraine Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            background: #F8F9FA;
+            border-right: 1px solid #E8E8E8;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            padding: 20px;
+            color: white;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: #F39C12;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #F39C12;
+        }
+        
+        .logo-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .tagline {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.4;
+            margin-top: 8px;
+        }
+        
+        .new-chat-btn {
+            background: #F39C12;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 14px;
+            width: 100%;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .new-chat-btn:hover {
+            background: #E08E0B;
+            transform: translateY(-1px);
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .connection-status {
+            padding: 10px 16px;
+            background: #E8F8F0;
+            border-bottom: 1px solid #E8E8E8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .connection-status.connected {
+            background: #E8F8F0;
+        }
+        
+        .connection-status.disconnected {
+            background: #FEF0F0;
+        }
+        
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27AE60;
+        }
+        
+        .connection-status.disconnected .connection-dot {
+            background: #E74C3C;
+        }
+        
+        .connection-text {
+            font-size: 12px;
+            color: #27AE60;
+            font-weight: 500;
+        }
+        
+        .connection-status.disconnected .connection-text {
+            color: #E74C3C;
+        }
+        
+        /* Analytics Type Legend */
+        .analytics-legend {
+            padding: 14px 16px;
+            background: white;
+            border-bottom: 1px solid #E8E8E8;
+        }
+        
+        .legend-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #7F8C8D;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            color: #5D6D7E;
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+        
+        .legend-dot.descriptive { background: #3498DB; }
+        .legend-dot.diagnostic { background: #9B59B6; }
+        .legend-dot.predictive { background: #E67E22; }
+        .legend-dot.prescriptive { background: #27AE60; }
+        
+        .example-queries {
+            padding: 14px 16px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .section-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #7F8C8D;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            margin-top: 8px;
+        }
+        
+        .section-title:first-child {
+            margin-top: 0;
+        }
+        
+        .query-card {
+            background: white;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border: 1px solid #E8E8E8;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .query-card:hover {
+            border-color: #E8E8E8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transform: translateX(2px);
+        }
+        
+        .query-card.descriptive { border-left-color: #3498DB; }
+        .query-card.diagnostic { border-left-color: #9B59B6; }
+        .query-card.predictive { border-left-color: #E67E22; }
+        .query-card.prescriptive { border-left-color: #27AE60; }
+        
+        .query-card:hover.descriptive { border-color: #3498DB; }
+        .query-card:hover.diagnostic { border-color: #9B59B6; }
+        .query-card:hover.predictive { border-color: #E67E22; }
+        .query-card:hover.prescriptive { border-color: #27AE60; }
+        
+        .query-category {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+        
+        .query-category.descriptive { color: #3498DB; }
+        .query-category.diagnostic { color: #9B59B6; }
+        .query-category.predictive { color: #E67E22; }
+        .query-category.prescriptive { color: #27AE60; }
+        
+        .query-text {
+            font-size: 12px;
+            color: #2C3E50;
+            line-height: 1.4;
+        }
+        
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #FAFBFC;
+        }
+        
+        .chat-header {
+            background: white;
+            padding: 16px 24px;
+            border-bottom: 1px solid #E8E8E8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1B4F72;
+        }
+        
+        .chat-subtitle {
+            font-size: 12px;
+            color: #7F8C8D;
+            margin-top: 2px;
+        }
+        
+        .header-badges {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .header-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .header-badge.fabric {
+            background: #EBF5FB;
+            color: #2980B9;
+        }
+        
+        .header-badge.ai {
+            background: #F5EEF8;
+            color: #8E44AD;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            max-width: 85%;
+        }
+        
+        .message.user {
+            margin-left: auto;
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #1B4F72, #2C5F7F);
+            color: white;
+        }
+        
+        .message.user .message-avatar {
+            background: #F39C12;
+            color: white;
+        }
+        
+        .message-content {
+            background: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .message.user .message-content {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        .message-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #2C3E50;
+        }
+        
+        .message.user .message-text {
+            color: white;
+        }
+        
+        /* Analytics Badge in Response */
+        .analytics-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .analytics-badge.descriptive {
+            background: #EBF5FB;
+            color: #2980B9;
+        }
+        
+        .analytics-badge.diagnostic {
+            background: #F5EEF8;
+            color: #8E44AD;
+        }
+        
+        .analytics-badge.predictive {
+            background: #FEF5E7;
+            color: #D35400;
+        }
+        
+        .analytics-badge.prescriptive {
+            background: #E8F8F0;
+            color: #1E8449;
+        }
+        
+        .analytics-badge-icon {
+            font-size: 12px;
+        }
+        
+        /* Agent Activity Panel */
+        .agent-activity {
+            background: #F8F9FA;
+            border-radius: 8px;
+            padding: 12px 14px;
+            margin: 12px 0;
+            border-left: 3px solid #1B4F72;
+        }
+        
+        .agent-activity-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: #1B4F72;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        
+        .agent-step {
+            font-size: 11px;
+            color: #5D6D7E;
+            padding: 3px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .agent-step::before {
+            content: "✓";
+            color: #27AE60;
+            font-weight: 700;
+            font-size: 10px;
+        }
+        
+        /* VDT Analysis Panel */
+        .vdt-panel {
+            background: linear-gradient(135deg, #F8F9FA, #EEF2F7);
+            border-radius: 8px;
+            padding: 14px;
+            margin: 12px 0;
+            border: 1px solid #E0E6ED;
+        }
+        
+        .vdt-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1B4F72;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .vdt-title::before {
+            content: "📊";
+        }
+        
+        .vdt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #E8E8E8;
+        }
+        
+        .vdt-row:last-child {
+            border-bottom: none;
+        }
+        
+        .vdt-label {
+            color: #5D6D7E;
+        }
+        
+        .vdt-value {
+            font-weight: 600;
+            color: #2C3E50;
+        }
+        
+        .vdt-value.positive {
+            color: #27AE60;
+        }
+        
+        .vdt-value.negative {
+            color: #E74C3C;
+        }
+        
+        /* Data Sources */
+        .data-sources {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .data-sources-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: #7F8C8D;
+            margin-bottom: 8px;
+        }
+        
+        .source-tag {
+            display: inline-block;
+            background: #EBF5FB;
+            color: #2980B9;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-right: 6px;
+            margin-bottom: 4px;
+        }
+        
+        /* Suggestions */
+        .suggestions-container {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .suggestions-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7F8C8D;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-chip {
+            display: inline-block;
+            background: white;
+            border: 1px solid #E0E6ED;
+            color: #2C3E50;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background: #1B4F72;
+            color: white;
+            border-color: #1B4F72;
+        }
+        
+        /* Chat Input */
+        .chat-input-container {
+            padding: 16px 24px;
+            background: white;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .input-field {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #E0E6ED;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            min-height: 50px;
+            max-height: 120px;
+        }
+        
+        .input-field:focus {
+            border-color: #1B4F72;
+        }
+        
+        .send-button {
+            background: linear-gradient(135deg, #1B4F72, #2C5F7F);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(27, 79, 114, 0.3);
+        }
+        
+        .send-button:disabled {
+            background: #BDC3C7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #BDC3C7;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+        
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            padding: 40px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .welcome-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1B4F72;
+            margin-bottom: 8px;
+        }
+        
+        .welcome-subtitle {
+            font-size: 14px;
+            color: #7F8C8D;
+            line-height: 1.6;
+        }
+        
+        /* Error Message */
+        .error-message {
+            background: #FEF0F0;
+            border: 1px solid #F5B7B1;
+            border-radius: 8px;
+            padding: 14px;
+            color: #922B21;
+            font-size: 13px;
+        }
+        
+        .error-message code {
+            background: #FADBD8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #F1F1F1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #CCC;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #AAA;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">S</div>
+                    <div>
+                        <div class="logo">SALIC</div>
+                        <div class="logo-subtitle">Financial Intelligence</div>
+                    </div>
+                </div>
+                <div class="tagline">AI-powered analytics for CFG Ukraine agricultural operations</div>
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <span>+</span> New Conversation
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="connection-status connected" id="connectionStatus">
+                    <div class="connection-dot"></div>
+                    <span class="connection-text">Checking connection...</span>
+                </div>
+                
+                <!-- Analytics Legend -->
+                <div class="analytics-legend">
+                    <div class="legend-title">Analytics Types</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-dot descriptive"></div>
+                            <span>Descriptive</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot diagnostic"></div>
+                            <span>Diagnostic</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot predictive"></div>
+                            <span>Predictive</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot prescriptive"></div>
+                            <span>Prescriptive</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="example-queries">
+                    <div class="section-title">📊 Descriptive - What Happened?</div>
+                    <div class="query-card descriptive" onclick="sendQuery(this)">
+                        <div class="query-category descriptive">Descriptive</div>
+                        <div class="query-text">What is CFG Ukraine's revenue for 2025?</div>
+                    </div>
+                    <div class="query-card descriptive" onclick="sendQuery(this)">
+                        <div class="query-category descriptive">Descriptive</div>
+                        <div class="query-text">What is the gross margin for winter wheat?</div>
+                    </div>
+                    
+                    <div class="section-title">🔍 Diagnostic - Why?</div>
+                    <div class="query-card diagnostic" onclick="sendQuery(this)">
+                        <div class="query-category diagnostic">Diagnostic</div>
+                        <div class="query-text">Why did net income beat budget by 56%?</div>
+                    </div>
+                    <div class="query-card diagnostic" onclick="sendQuery(this)">
+                        <div class="query-category diagnostic">Diagnostic</div>
+                        <div class="query-text">Compare actual vs budget by account</div>
+                    </div>
+                    
+                    <div class="section-title">🔮 Predictive - What If?</div>
+                    <div class="query-card predictive" onclick="sendQuery(this)">
+                        <div class="query-category predictive">Predictive</div>
+                        <div class="query-text">What if wheat prices drop by 15%?</div>
+                    </div>
+                    <div class="query-card predictive" onclick="sendQuery(this)">
+                        <div class="query-category predictive">Predictive</div>
+                        <div class="query-text">What is the impact if yields decrease 10%?</div>
+                    </div>
+                    
+                    <div class="section-title">💡 Prescriptive - What To Do?</div>
+                    <div class="query-card prescriptive" onclick="sendQuery(this)">
+                        <div class="query-category prescriptive">Prescriptive</div>
+                        <div class="query-text">How should we optimize the crop mix?</div>
+                    </div>
+                    <div class="query-card prescriptive" onclick="sendQuery(this)">
+                        <div class="query-category prescriptive">Prescriptive</div>
+                        <div class="query-text">What actions to improve profitability?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div>
+                    <div class="chat-title">CFG Ukraine Analytics</div>
+                    <div class="chat-subtitle">Value-Driver Tree powered financial analysis</div>
+                </div>
+                <div class="header-badges">
+                    <div class="header-badge fabric">
+                        <span>◆</span> Microsoft Fabric
+                    </div>
+                    <div class="header-badge ai">
+                        <span>✦</span> GPT-4o
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">📊</div>
+                    <div class="welcome-title">Welcome to CFG Ukraine Financial Analytics</div>
+                    <div class="welcome-subtitle">
+                        Ask me anything about CFG Ukraine's financial performance. I can describe what happened, 
+                        explain why, predict scenarios, and recommend actions using the Value-Driver Tree framework.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        class="input-field" 
+                        id="userInput" 
+                        placeholder="Ask about revenue, margins, variances, scenarios..."
+                        onkeypress="handleKeyPress(event)"
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:8000';
+        let sessionId = 'session-' + Date.now();
+        
+        // Analytics type icons and colors
+        const ANALYTICS_CONFIG = {
+            'DESCRIPTIVE': { icon: '📊', color: '#3498DB', label: 'What Happened?' },
+            'DIAGNOSTIC': { icon: '🔍', color: '#9B59B6', label: 'Why?' },
+            'PREDICTIVE': { icon: '🔮', color: '#E67E22', label: 'What If?' },
+            'PRESCRIPTIVE': { icon: '💡', color: '#27AE60', label: 'What To Do?' }
+        };
+        
+        // Check connection on load
+        window.onload = function() {
+            checkConnection();
+            autoResizeTextarea();
+        };
+        
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('userInput');
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+        
+        async function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    statusEl.className = 'connection-status connected';
+                    statusEl.innerHTML = '<div class="connection-dot"></div><span class="connection-text">Connected to Microsoft Fabric</span>';
+                } else {
+                    throw new Error('API not healthy');
+                }
+            } catch (error) {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.innerHTML = '<div class="connection-dot"></div><span class="connection-text">Disconnected - Start API server</span>';
+            }
+        }
+        
+        function startNewChat() {
+            sessionId = 'session-' + Date.now();
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="welcome-message">
+                    <div class="welcome-icon">🔄</div>
+                    <div class="welcome-title">New Conversation Started</div>
+                    <div class="welcome-subtitle">
+                        Ready to analyze CFG Ukraine financial data. Try asking about revenue, margins, or scenarios.
+                    </div>
+                </div>
+            `;
+        }
+        
+        function sendQuery(element) {
+            const queryText = element.querySelector('.query-text').textContent;
+            document.getElementById('userInput').value = queryText;
+            sendMessage();
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function useSuggestion(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const messageText = input.value.trim();
+            
+            if (messageText === '') return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Remove welcome message if present
+            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `
+                <div class="message-avatar">U</div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(messageText)}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(userMessage);
+            
+            // Clear input
+            input.value = '';
+            input.style.height = 'auto';
+            sendButton.disabled = true;
+            
+            // Show typing indicator
+            const typingMessage = document.createElement('div');
+            typingMessage.className = 'message assistant';
+            typingMessage.id = 'typingIndicator';
+            typingMessage.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: messageText,
+                        session_id: sessionId
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                document.getElementById('typingIndicator').remove();
+                
+                // Build response
+                const classification = data.classification || 'DESCRIPTIVE';
+                const config = ANALYTICS_CONFIG[classification];
+                
+                let responseHtml = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="analytics-badge ${classification.toLowerCase()}">
+                            <span class="analytics-badge-icon">${config.icon}</span>
+                            ${classification} - ${config.label}
+                        </div>
+                        
+                        <div class="agent-activity">
+                            <div class="agent-activity-title">Agent Processing</div>
+                            <div class="agent-step">Query classified as ${classification}</div>
+                            <div class="agent-step">SQL generated for Fabric warehouse</div>
+                            <div class="agent-step">Retrieved ${data.data?.row_count || 0} records</div>
+                            <div class="agent-step">Applied Value-Driver Tree analysis</div>
+                        </div>
+                        
+                        <div class="message-text">${formatResponse(data.response || 'No response received.')}</div>
+                        
+                        <div class="data-sources">
+                            <div class="data-sources-title">Data Sources</div>
+                            <span class="source-tag">Fabric: vw_Fact_Actuals_SALIC_Ukraine</span>
+                            <span class="source-tag">Knowledge Base: CFG Ukraine</span>
+                        </div>
+                `;
+                
+                // Add suggestions
+                if (data.suggestions && data.suggestions.length > 0) {
+                    responseHtml += `
+                        <div class="suggestions-container">
+                            <div class="suggestions-title">Continue exploring:</div>
+                    `;
+                    data.suggestions.forEach(s => {
+                        responseHtml += `<span class="suggestion-chip" onclick="useSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</span>`;
+                    });
+                    responseHtml += `</div>`;
+                }
+                
+                responseHtml += `</div>`;
+                
+                const assistantMessage = document.createElement('div');
+                assistantMessage.className = 'message assistant';
+                assistantMessage.innerHTML = responseHtml;
+                messagesContainer.appendChild(assistantMessage);
+                
+            } catch (error) {
+                const typingEl = document.getElementById('typingIndicator');
+                if (typingEl) typingEl.remove();
+                
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message assistant';
+                errorMessage.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="error-message">
+                            <strong>Connection Error</strong><br/>
+                            Could not reach the API server. Please start it with:<br/>
+                            <code>python api.py</code>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(errorMessage);
+                checkConnection();
+            }
+            
+            sendButton.disabled = false;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatResponse(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br/>')
+                .replace(/• /g, '&bull; ')
+                .replace(/\|/g, ' | ');
+        }
+    </script>
+</body>
+</html>

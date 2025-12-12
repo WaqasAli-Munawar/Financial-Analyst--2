@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALIC Agentic RAG - Financial Intelligence Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #F8F9FA;
+            border-right: 1px solid #E8E8E8;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            padding: 20px;
+            color: white;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-image {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
+        
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #F39C12;
+        }
+        
+        .tagline {
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.4;
+        }
+        
+        .new-chat-btn {
+            background: #F39C12;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        
+        .new-chat-btn:hover {
+            background: #E08E0B;
+            transform: translateY(-1px);
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .connection-status {
+            padding: 12px 16px;
+            background: #E8F8F0;
+            border-bottom: 1px solid #E8E8E8;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .connection-status.connected {
+            background: #E8F8F0;
+        }
+        
+        .connection-status.disconnected {
+            background: #FEF0F0;
+        }
+        
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #27AE60;
+        }
+        
+        .connection-status.disconnected .connection-dot {
+            background: #E74C3C;
+        }
+        
+        .connection-text {
+            font-size: 12px;
+            color: #27AE60;
+            font-weight: 500;
+        }
+        
+        .connection-status.disconnected .connection-text {
+            color: #E74C3C;
+        }
+        
+        .example-queries {
+            padding: 16px;
+            flex: 1;
+        }
+        
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1B4F72;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        
+        .query-card {
+            background: white;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border: 1px solid #E8E8E8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .query-card:hover {
+            border-color: #F39C12;
+            box-shadow: 0 2px 8px rgba(243, 156, 18, 0.2);
+        }
+        
+        .query-category {
+            font-size: 10px;
+            font-weight: 600;
+            color: #F39C12;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .query-text {
+            font-size: 12px;
+            color: #2C3E50;
+            line-height: 1.4;
+        }
+        
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: white;
+            padding: 20px 28px;
+            border-bottom: 1px solid #E8E8E8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1B4F72;
+        }
+        
+        .chat-subtitle {
+            font-size: 12px;
+            color: #7F8C8D;
+            margin-top: 4px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #27AE60;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .status-text {
+            font-size: 13px;
+            color: #27AE60;
+            font-weight: 500;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 28px;
+            background: #FAFBFC;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #F39C12;
+            color: white;
+        }
+        
+        .message-content {
+            max-width: 70%;
+        }
+        
+        .message.user .message-content {
+            background: #1B4F72;
+            color: white;
+            padding: 14px 18px;
+            border-radius: 16px 16px 4px 16px;
+        }
+        
+        .message.assistant .message-content {
+            background: white;
+            color: #2C3E50;
+            padding: 16px 20px;
+            border-radius: 16px 16px 16px 4px;
+            border: 1px solid #E8E8E8;
+        }
+        
+        .message-text {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            white-space: pre-wrap;
+        }
+        
+        .message-text:last-child {
+            margin-bottom: 0;
+        }
+        
+        .classification-badge {
+            display: inline-block;
+            background: #E8F4F8;
+            color: #2C5F7F;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .classification-badge.descriptive { background: #E8F4F8; color: #2C5F7F; }
+        .classification-badge.diagnostic { background: #FFF3E0; color: #E65100; }
+        .classification-badge.predictive { background: #E8F5E9; color: #2E7D32; }
+        .classification-badge.prescriptive { background: #F3E5F5; color: #7B1FA2; }
+        
+        .agent-activity {
+            background: #F8F9FA;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 3px solid #F39C12;
+        }
+        
+        .agent-activity-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1B4F72;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .agent-step {
+            font-size: 12px;
+            color: #2C3E50;
+            margin-bottom: 4px;
+            padding-left: 16px;
+            position: relative;
+        }
+        
+        .agent-step::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #F39C12;
+            font-weight: 700;
+        }
+        
+        .data-sources {
+            background: #E8F4F8;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .data-sources-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1B4F72;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .source-tag {
+            display: inline-block;
+            background: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #2C5F7F;
+            margin-right: 6px;
+            margin-bottom: 4px;
+            border: 1px solid #2C5F7F;
+        }
+        
+        .suggestions-container {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .suggestions-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7F8C8D;
+            margin-bottom: 8px;
+        }
+        
+        .suggestion-chip {
+            display: inline-block;
+            background: #F8F9FA;
+            border: 1px solid #E8E8E8;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #2C3E50;
+            margin-right: 6px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background: #FFF9F0;
+            border-color: #F39C12;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 14px 18px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #7F8C8D;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        /* Input Area */
+        .chat-input-area {
+            background: white;
+            padding: 20px 28px;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            border: 2px solid #E8E8E8;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .chat-input:focus {
+            border-color: #F39C12;
+        }
+        
+        .send-button {
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .send-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .send-button:active {
+            transform: translateY(0);
+        }
+        
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            background: #FEF0F0;
+            border: 1px solid #FADBD8;
+            color: #C0392B;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo">SALIC</div>
+                </div>
+                <div class="tagline">CFG Ukraine Financial Intelligence Assistant<br/>Powered by Agentic RAG & Microsoft Fabric</div>
+                <button class="new-chat-btn" onclick="startNewChat()">+ New Conversation</button>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="connection-status connected" id="connectionStatus">
+                    <div class="connection-dot"></div>
+                    <span class="connection-text">Connected to Fabric</span>
+                </div>
+                
+                <div class="example-queries">
+                    <div class="section-title">Example Queries</div>
+                    
+                    <div class="query-card" onclick="sendQuery(this)">
+                        <div class="query-category">Descriptive</div>
+                        <div class="query-text">What were the G&A expenses for CFG Ukraine in 2024?</div>
+                    </div>
+                    
+                    <div class="query-card" onclick="sendQuery(this)">
+                        <div class="query-category">Diagnostic</div>
+                        <div class="query-text">Why did expenses spike in September 2024?</div>
+                    </div>
+                    
+                    <div class="query-card" onclick="sendQuery(this)">
+                        <div class="query-category">Predictive</div>
+                        <div class="query-text">Based on the trend, forecast G&A expenses for Q1 2025</div>
+                    </div>
+                    
+                    <div class="query-card" onclick="sendQuery(this)">
+                        <div class="query-category">Prescriptive</div>
+                        <div class="query-text">How can we reduce administrative costs?</div>
+                    </div>
+                    
+                    <div class="query-card" onclick="sendQuery(this)">
+                        <div class="query-category">Descriptive</div>
+                        <div class="query-text">Show me the monthly trend of all expenses</div>
+                    </div>
+                    
+                    <div class="query-card" onclick="sendQuery(this)">
+                        <div class="query-category">Diagnostic</div>
+                        <div class="query-text">What accounts have the highest amounts?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div>
+                    <div class="chat-title">CFG Ukraine Financial Analytics</div>
+                    <div class="chat-subtitle">Real-time data from Microsoft Fabric</div>
+                </div>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span class="status-text">Live Data</span>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <strong>Welcome to CFG Ukraine Financial Intelligence Assistant!</strong>
+                        </div>
+                        <div class="message-text">
+                            I'm connected to your Microsoft Fabric data warehouse and can help you with:
+                        </div>
+                        <div class="message-text">
+                            • <strong>Descriptive Analytics</strong> - What happened? (trends, summaries)<br/>
+                            • <strong>Diagnostic Analytics</strong> - Why did it happen? (root cause analysis)<br/>
+                            • <strong>Predictive Analytics</strong> - What will happen? (forecasts)<br/>
+                            • <strong>Prescriptive Analytics</strong> - What should we do? (recommendations)
+                        </div>
+                        <div class="message-text">
+                            Try one of the example queries on the left, or ask your own question!
+                        </div>
+                        <div class="data-sources">
+                            <div class="data-sources-title">Connected Data Sources</div>
+                            <span class="source-tag">Fabric: vw_Fact_Actuals_SALIC_Ukraine</span>
+                            <span class="source-tag">Fabric: Dim_Account</span>
+                            <span class="source-tag">Fabric: Dim_Period</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="input-container">
+                    <textarea 
+                        class="chat-input" 
+                        id="userInput" 
+                        placeholder="Ask about CFG Ukraine financials..." 
+                        rows="1"
+                        onkeypress="handleKeyPress(event)"
+                    ></textarea>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration - Update this URL if your API is running on a different port
+        const API_BASE_URL = 'http://localhost:8000';
+        let sessionId = 'session-' + Date.now();
+        
+        // Check API connection on load
+        window.onload = function() {
+            checkConnection();
+        };
+        
+        async function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    statusEl.className = 'connection-status connected';
+                    statusEl.innerHTML = '<div class="connection-dot"></div><span class="connection-text">Connected to Fabric</span>';
+                } else {
+                    throw new Error('API not healthy');
+                }
+            } catch (error) {
+                statusEl.className = 'connection-status disconnected';
+                statusEl.innerHTML = '<div class="connection-dot"></div><span class="connection-text">API Disconnected - Start the server</span>';
+            }
+        }
+        
+        function startNewChat() {
+            sessionId = 'session-' + Date.now();
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="message assistant">
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            <strong>New conversation started!</strong>
+                        </div>
+                        <div class="message-text">
+                            How can I help you analyze CFG Ukraine financial data today?
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function sendQuery(element) {
+            const queryText = element.querySelector('.query-text').textContent;
+            document.getElementById('userInput').value = queryText;
+            sendMessage();
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function useSuggestion(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const messageText = input.value.trim();
+            
+            if (messageText === '') return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `
+                <div class="message-avatar">U</div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(messageText)}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(userMessage);
+            
+            // Clear input and disable button
+            input.value = '';
+            sendButton.disabled = true;
+            
+            // Show typing indicator
+            const typingMessage = document.createElement('div');
+            typingMessage.className = 'message assistant';
+            typingMessage.id = 'typingIndicator';
+            typingMessage.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            try {
+                // Call the real API
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: messageText,
+                        session_id: sessionId
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                document.getElementById('typingIndicator').remove();
+                
+                // Build the response HTML
+                let responseHtml = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                `;
+                
+                // Add classification badge
+                if (data.classification) {
+                    const badgeClass = data.classification.toLowerCase();
+                    responseHtml += `<span class="classification-badge ${badgeClass}">${data.classification}</span>`;
+                }
+                
+                // Add agent activity
+                responseHtml += `
+                    <div class="agent-activity">
+                        <div class="agent-activity-title">Agent Processing</div>
+                        <div class="agent-step">Query Classifier: Identified as ${data.classification || 'DESCRIPTIVE'} query</div>
+                        <div class="agent-step">SQL Generator: Created optimized Fabric query</div>
+                        <div class="agent-step">Data Retrieved: ${data.data?.row_count || 0} rows from warehouse</div>
+                        <div class="agent-step">Response Generator: Synthesized insights</div>
+                    </div>
+                `;
+                
+                // Add main response
+                responseHtml += `<div class="message-text" style="margin-top: 12px;">${formatResponse(data.response || 'No response received.')}</div>`;
+                
+                // Add data sources
+                responseHtml += `
+                    <div class="data-sources">
+                        <div class="data-sources-title">Data Sources Used</div>
+                        <span class="source-tag">Fabric: vw_Fact_Actuals_SALIC_Ukraine</span>
+                        <span class="source-tag">Fabric: Dim_Account</span>
+                        <span class="source-tag">Fabric: Dim_Period</span>
+                    </div>
+                `;
+                
+                // Add suggestions if available
+                if (data.suggestions && data.suggestions.length > 0) {
+                    responseHtml += `
+                        <div class="suggestions-container">
+                            <div class="suggestions-title">Suggested follow-up questions:</div>
+                    `;
+                    data.suggestions.forEach(suggestion => {
+                        responseHtml += `<span class="suggestion-chip" onclick="useSuggestion('${escapeHtml(suggestion)}')">${escapeHtml(suggestion)}</span>`;
+                    });
+                    responseHtml += `</div>`;
+                }
+                
+                responseHtml += `</div>`;
+                
+                // Add assistant message
+                const assistantMessage = document.createElement('div');
+                assistantMessage.className = 'message assistant';
+                assistantMessage.innerHTML = responseHtml;
+                messagesContainer.appendChild(assistantMessage);
+                
+            } catch (error) {
+                // Remove typing indicator
+                const typingEl = document.getElementById('typingIndicator');
+                if (typingEl) typingEl.remove();
+                
+                // Show error message
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message assistant';
+                errorMessage.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="error-message">
+                            <strong>Connection Error</strong><br/>
+                            Could not connect to the API. Please ensure the server is running:<br/>
+                            <code>uvicorn api:app --reload --port 8000</code>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(errorMessage);
+                
+                // Update connection status
+                checkConnection();
+            }
+            
+            // Re-enable button and scroll
+            sendButton.disabled = false;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatResponse(text) {
+            // Convert markdown-like formatting to HTML
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br/>')
+                .replace(/• /g, '&bull; ');
+        }
+    </script>
+</body>
+</html>

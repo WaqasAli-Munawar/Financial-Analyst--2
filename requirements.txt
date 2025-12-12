@@ -1,0 +1,27 @@
+# CFG Ukraine Financial Analytics Agent - Dependencies
+
+# Azure OpenAI SDK
+openai>=1.12.0
+
+# Microsoft Fabric SQL connectivity
+pyodbc>=5.0.1
+
+# Azure Cosmos DB (for production memory store)
+azure-cosmos>=4.5.1
+
+# Azure Identity (for managed identity authentication)
+azure-identity>=1.15.0
+
+# Web framework for API deployment
+fastapi>=0.109.0
+uvicorn>=0.27.0
+
+# For Azure Functions deployment
+azure-functions>=1.18.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# Optional: For Streamlit demo UI
+# streamlit>=1.31.0
