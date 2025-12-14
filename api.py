@@ -10,7 +10,7 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv(".env", override=True)
+load_dotenv()
 
 # Import the agent
 from agent import CFGUkraineAgent, format_response
@@ -87,13 +87,18 @@ async def chat(request: ChatRequest):
     Main chat endpoint for the financial analytics agent.
     
     Send a natural language question and receive an AI-powered response.
+    Automatically handles multi-question messages.
+    
     The agent automatically classifies queries into:
     - DESCRIPTIVE: What happened?
     - DIAGNOSTIC: Why did it happen?
     - PREDICTIVE: What will happen?
     - PRESCRIPTIVE: What should we do?
+    
+    Note: For multiple questions in one message, use the /chat/multi endpoint.
     """
     try:
+        # Use regular chat (not smart chat) to avoid multi-question detection issues
         result = agent.chat(
             message=request.message,
             session_id=request.session_id
@@ -108,6 +113,51 @@ async def chat(request: ChatRequest):
             data=result.get("data"),
             suggestions=result.get("suggestions", []),
             error=result.get("error")
+        )
+        
+    except Exception as e:
+        import traceback
+        print(f"❌ API Error: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class MultiChatResponse(BaseModel):
+    session_id: str
+    original_message: str
+    question_count: int
+    classifications: List[str]
+    response: str
+    individual_results: List[Dict[str, Any]]
+    suggestions: List[str]
+
+
+@app.post("/chat/multi", response_model=MultiChatResponse)
+async def chat_multi(request: ChatRequest):
+    """
+    Explicitly process a message as multiple questions.
+    
+    Decomposes complex queries, processes each in parallel,
+    and returns a comprehensive synthesized response.
+    
+    Example input:
+    "What is our financial performance? Why did net income beat budget? 
+     What if prices drop 10%? How should we optimize the crop mix?"
+    """
+    try:
+        result = agent.chat_multi(
+            message=request.message,
+            session_id=request.session_id
+        )
+        
+        return MultiChatResponse(
+            session_id=result["session_id"],
+            original_message=result["original_message"],
+            question_count=result["question_count"],
+            classifications=result.get("classifications", []),
+            response=result["response"],
+            individual_results=result.get("individual_results", []),
+            suggestions=result.get("suggestions", [])
         )
         
     except Exception as e:

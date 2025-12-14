@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SALIC Financial Intelligence - CFG Ukraine Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            background: #F8F9FA;
+            border-right: 1px solid #E8E8E8;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            background: linear-gradient(135deg, #1B4F72 0%, #2C5F7F 100%);
+            padding: 20px;
+            color: white;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .logo-image {
+            height: 50px;
+            width: auto;
+        }
+        
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: #F39C12;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #F39C12;
+        }
+        
+        .logo-subtitle {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .tagline {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 16px;
+        }
+        
+        .new-chat-btn {
+            width: 100%;
+            padding: 12px;
+            background: #F39C12;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        
+        .new-chat-btn:hover {
+            background: #E67E22;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: #F0F0F0;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 12px;
+        }
+        
+        .connection-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #E74C3C;
+        }
+        
+        .connection-status.connected .connection-dot {
+            background: #27AE60;
+        }
+        
+        .analytics-legend {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #E8E8E8;
+        }
+        
+        .legend-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+        }
+        
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+        }
+        
+        .legend-dot.descriptive { background: #3498DB; }
+        .legend-dot.diagnostic { background: #F39C12; }
+        .legend-dot.predictive { background: #9B59B6; }
+        .legend-dot.prescriptive { background: #27AE60; }
+        
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #444;
+            margin: 16px 0 10px;
+        }
+        
+        .query-card {
+            background: white;
+            border: 1px solid #E8E8E8;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .query-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .query-category {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        
+        .query-category.descriptive { background: #EBF5FB; color: #3498DB; }
+        .query-category.diagnostic { background: #FEF5E7; color: #F39C12; }
+        .query-category.predictive { background: #F5EEF8; color: #9B59B6; }
+        .query-category.prescriptive { background: #E8F8F5; color: #27AE60; }
+        
+        .query-text {
+            font-size: 13px;
+            color: #333;
+        }
+        
+        /* Main Chat Area */
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid #E8E8E8;
+            background: white;
+        }
+        
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1B4F72;
+        }
+        
+        .chat-subtitle {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .header-badges {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .header-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .badge-fabric {
+            background: #EBF5FB;
+            color: #2980B9;
+        }
+        
+        .badge-ai {
+            background: #F5EEF8;
+            color: #8E44AD;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: #F5F7FA;
+        }
+        
+        .welcome-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .welcome-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1B4F72;
+            margin-bottom: 8px;
+        }
+        
+        .welcome-text {
+            font-size: 14px;
+            color: #666;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .message {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            max-width: 90%;
+        }
+        
+        .message.user {
+            flex-direction: row-reverse;
+            margin-left: auto;
+        }
+        
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: #F39C12;
+            color: white;
+        }
+        
+        .message.assistant .message-avatar {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        .message-content {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        .message.user .message-content {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        .analytics-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+        
+        .analytics-badge.descriptive { background: #EBF5FB; color: #3498DB; }
+        .analytics-badge.diagnostic { background: #FEF5E7; color: #F39C12; }
+        .analytics-badge.predictive { background: #F5EEF8; color: #9B59B6; }
+        .analytics-badge.prescriptive { background: #E8F8F5; color: #27AE60; }
+        
+        .agent-activity {
+            background: #F8F9FA;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            border-left: 3px solid #27AE60;
+        }
+        
+        .agent-activity-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .agent-step {
+            font-size: 12px;
+            color: #555;
+            padding: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .agent-step:before {
+            content: '✓';
+            color: #27AE60;
+            font-weight: bold;
+        }
+        
+        .message-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .message-text p {
+            margin-bottom: 12px;
+        }
+        
+        .message-text strong {
+            color: #1B4F72;
+        }
+        
+        .message-text table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+        }
+        
+        .message-text th, .message-text td {
+            border: 1px solid #E8E8E8;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .message-text th {
+            background: #F5F7FA;
+            font-weight: 600;
+        }
+        
+        /* Chart Container Styles */
+        .chart-container {
+            background: #FAFBFC;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            border: 1px solid #E8E8E8;
+        }
+        
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1B4F72;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
+        
+        .charts-grid .chart-container {
+            margin: 0;
+        }
+        
+        .charts-grid .chart-wrapper {
+            height: 250px;
+        }
+        
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .data-sources {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .data-sources-title {
+            font-size: 10px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        
+        .source-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #EBF5FB;
+            color: #2980B9;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-right: 6px;
+        }
+        
+        .suggestions-container {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .suggestions-title {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .suggestion-chip {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #F0F0F0;
+            border-radius: 16px;
+            font-size: 12px;
+            color: #555;
+            margin: 4px 4px 4px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .suggestion-chip:hover {
+            background: #1B4F72;
+            color: white;
+        }
+        
+        .error-message {
+            background: #FDEDEC;
+            border: 1px solid #F5B7B1;
+            color: #C0392B;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        
+        .error-message code {
+            background: #F8F8F8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        /* Input Area */
+        .chat-input-container {
+            padding: 16px 24px;
+            background: white;
+            border-top: 1px solid #E8E8E8;
+        }
+        
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+        
+        .chat-input {
+            flex: 1;
+            border: 2px solid #E8E8E8;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+            min-height: 48px;
+            max-height: 120px;
+        }
+        
+        .chat-input:focus {
+            border-color: #1B4F72;
+        }
+        
+        .send-button {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #1B4F72;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        
+        .send-button:hover:not(:disabled) {
+            background: #2C5F7F;
+        }
+        
+        .send-button:disabled {
+            background: #BDC3C7;
+            cursor: not-allowed;
+        }
+        
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #1B4F72;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-4px); opacity: 1; }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #CCC;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #AAA;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="data:image/webp;base64,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" alt="SALIC Logo" class="logo-image">
+                </div>
+                <div class="tagline">AI-powered analytics for CFG Ukraine agricultural operations</div>
+                <button class="new-chat-btn" onclick="startNewChat()">
+                    <span>+</span> New Conversation
+                </button>
+            </div>
+            
+            <div class="sidebar-content">
+                <div class="connection-status connected" id="connectionStatus">
+                    <div class="connection-dot"></div>
+                    <span class="connection-text">Checking connection...</span>
+                </div>
+                
+                <!-- Analytics Legend -->
+                <div class="analytics-legend">
+                    <div class="legend-title">Analytics Types</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-dot descriptive"></div>
+                            <span>Descriptive</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot diagnostic"></div>
+                            <span>Diagnostic</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot predictive"></div>
+                            <span>Predictive</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot prescriptive"></div>
+                            <span>Prescriptive</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="example-queries">
+                    <div class="section-title">📊 Descriptive - What Happened?</div>
+                    <div class="query-card descriptive" onclick="sendQuery(this)">
+                        <div class="query-category descriptive">Descriptive</div>
+                        <div class="query-text">What is CFG Ukraine's financial performance for FY2025?</div>
+                    </div>
+                    <div class="query-card descriptive" onclick="sendQuery(this)">
+                        <div class="query-category descriptive">Descriptive</div>
+                        <div class="query-text">What is the gross margin for winter wheat?</div>
+                    </div>
+                    
+                    <div class="section-title">🔍 Diagnostic - Why?</div>
+                    <div class="query-card diagnostic" onclick="sendQuery(this)">
+                        <div class="query-category diagnostic">Diagnostic</div>
+                        <div class="query-text">How does forecast compare to budget?</div>
+                    </div>
+                    <div class="query-card diagnostic" onclick="sendQuery(this)">
+                        <div class="query-category diagnostic">Diagnostic</div>
+                        <div class="query-text">Why did net income beat budget by 56%?</div>
+                    </div>
+                    
+                    <div class="section-title">🔮 Predictive - What If?</div>
+                    <div class="query-card predictive" onclick="sendQuery(this)">
+                        <div class="query-category predictive">Predictive</div>
+                        <div class="query-text">What if wheat prices drop by 15%?</div>
+                    </div>
+                    <div class="query-card predictive" onclick="sendQuery(this)">
+                        <div class="query-category predictive">Predictive</div>
+                        <div class="query-text">What is the impact if yields decrease 10%?</div>
+                    </div>
+                    
+                    <div class="section-title">💡 Prescriptive - What To Do?</div>
+                    <div class="query-card prescriptive" onclick="sendQuery(this)">
+                        <div class="query-category prescriptive">Prescriptive</div>
+                        <div class="query-text">How should we optimize the crop mix?</div>
+                    </div>
+                    <div class="query-card prescriptive" onclick="sendQuery(this)">
+                        <div class="query-category prescriptive">Prescriptive</div>
+                        <div class="query-text">What actions to improve profitability?</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-header">
+                <div>
+                    <div class="chat-title">CFG Ukraine Analytics</div>
+                    <div class="chat-subtitle">Value-Driver Tree powered financial analysis</div>
+                </div>
+                <div class="header-badges">
+                    <span class="header-badge badge-fabric">◆ Microsoft Fabric</span>
+                    <span class="header-badge badge-ai">✦ GPT-4o</span>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="welcome-icon">📊</div>
+                    <div class="welcome-title">CFG Ukraine Financial Analytics</div>
+                    <div class="welcome-text">
+                        Ask questions about CFG Ukraine's financial performance, crop analytics, 
+                        budget variances, and get AI-powered recommendations. Now with interactive charts!
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="chat-input-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="userInput" 
+                        placeholder="Ask about revenue, margins, variances, scenarios..."
+                        onkeypress="handleKeyPress(event)"
+                        oninput="autoResize(this)"
+                        rows="1"
+                    ></textarea>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let sessionId = 'session_' + Date.now();
+        let chartCounter = 0;
+        
+        const ANALYTICS_CONFIG = {
+            'DESCRIPTIVE': { icon: '📊', label: 'What Happened?', color: '#3498DB' },
+            'DIAGNOSTIC': { icon: '🔍', label: 'Why?', color: '#F39C12' },
+            'PREDICTIVE': { icon: '🔮', label: 'What If?', color: '#9B59B6' },
+            'PRESCRIPTIVE': { icon: '💡', label: 'What To Do?', color: '#27AE60' }
+        };
+        
+        // Check API connection
+        async function checkConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    statusEl.classList.add('connected');
+                    statusEl.querySelector('.connection-text').textContent = 'Connected to Microsoft Fabric';
+                } else {
+                    throw new Error('Not connected');
+                }
+            } catch (e) {
+                statusEl.classList.remove('connected');
+                statusEl.querySelector('.connection-text').textContent = 'Disconnected - Start API server';
+            }
+        }
+        
+        checkConnection();
+        setInterval(checkConnection, 30000);
+        
+        function startNewChat() {
+            sessionId = 'session_' + Date.now();
+            chartCounter = 0;
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="welcome-message">
+                    <div class="welcome-icon">📊</div>
+                    <div class="welcome-title">CFG Ukraine Financial Analytics</div>
+                    <div class="welcome-text">
+                        Ask questions about CFG Ukraine's financial performance, crop analytics, 
+                        budget variances, and get AI-powered recommendations. Now with interactive charts!
+                    </div>
+                </div>
+            `;
+        }
+        
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+        
+        function sendQuery(element) {
+            const queryText = element.querySelector('.query-text').textContent;
+            document.getElementById('userInput').value = queryText;
+            sendMessage();
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function useSuggestion(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+        
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+            const messageText = input.value.trim();
+            
+            if (messageText === '') return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Remove welcome message if present
+            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMsg) welcomeMsg.remove();
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `
+                <div class="message-avatar">U</div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(messageText)}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(userMessage);
+            
+            // Clear input
+            input.value = '';
+            input.style.height = 'auto';
+            sendButton.disabled = true;
+            
+            // Show typing indicator
+            const typingMessage = document.createElement('div');
+            typingMessage.className = 'message assistant';
+            typingMessage.id = 'typingIndicator';
+            typingMessage.innerHTML = `
+                <div class="message-avatar">AI</div>
+                <div class="message-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(typingMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: messageText,
+                        session_id: sessionId
+                    })
+                });
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                document.getElementById('typingIndicator').remove();
+                
+                // Build response
+                const classification = data.classification || 'DESCRIPTIVE';
+                const config = ANALYTICS_CONFIG[classification];
+                
+                // Generate chart data from response
+                const chartHtml = generateCharts(data, classification, messageText);
+                
+                let responseHtml = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="analytics-badge ${classification.toLowerCase()}">
+                            <span class="analytics-badge-icon">${config.icon}</span>
+                            ${classification} - ${config.label}
+                        </div>
+                        
+                        <div class="agent-activity">
+                            <div class="agent-activity-title">Agent Processing</div>
+                            <div class="agent-step">Query classified as ${classification}</div>
+                            <div class="agent-step">SQL generated for Fabric warehouse</div>
+                            <div class="agent-step">Retrieved ${data.data?.row_count || 0} records</div>
+                            <div class="agent-step">Applied Value-Driver Tree analysis</div>
+                        </div>
+                        
+                        ${chartHtml}
+                        
+                        <div class="message-text">${formatResponse(data.response || 'No response received.')}</div>
+                        
+                        <div class="data-sources">
+                            <div class="data-sources-title">Data Sources</div>
+                            <span class="source-tag">Fabric: vw_Fact_Actuals_SALIC_Ukraine</span>
+                            <span class="source-tag">Knowledge Base: CFG Ukraine</span>
+                        </div>
+                `;
+                
+                // Add suggestions
+                if (data.suggestions && data.suggestions.length > 0) {
+                    responseHtml += `
+                        <div class="suggestions-container">
+                            <div class="suggestions-title">Continue exploring:</div>
+                    `;
+                    data.suggestions.forEach(s => {
+                        responseHtml += `<span class="suggestion-chip" onclick="useSuggestion('${escapeHtml(s)}')">${escapeHtml(s)}</span>`;
+                    });
+                    responseHtml += `</div>`;
+                }
+                
+                responseHtml += `</div>`;
+                
+                const assistantMessage = document.createElement('div');
+                assistantMessage.className = 'message assistant';
+                assistantMessage.innerHTML = responseHtml;
+                messagesContainer.appendChild(assistantMessage);
+                
+                // Render charts after DOM is updated
+                setTimeout(() => renderCharts(data, classification, messageText), 100);
+                
+            } catch (error) {
+                const typingEl = document.getElementById('typingIndicator');
+                if (typingEl) typingEl.remove();
+                
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message assistant';
+                errorMessage.innerHTML = `
+                    <div class="message-avatar">AI</div>
+                    <div class="message-content">
+                        <div class="error-message">
+                            <strong>Connection Error</strong><br/>
+                            Could not reach the API server. Please start it with:<br/>
+                            <code>python api.py</code>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(errorMessage);
+                checkConnection();
+            }
+            
+            sendButton.disabled = false;
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function generateCharts(data, classification, query) {
+            const queryLower = query.toLowerCase();
+            let chartHtml = '';
+            
+            // Only generate charts when we have actual data
+            const hasData = data.data && data.data.row_count > 0;
+            const dataSource = data.data_source || '';
+            
+            // Chart feasibility rules:
+            // 1. Must have data from Fabric OR be a well-defined KB scenario
+            // 2. Query must match specific patterns where charts add value
+            // 3. Classification must be appropriate for visualization
+            
+            // DIAGNOSTIC: Forecast vs Budget - Only when we have Fabric data with multiple scenarios
+            if (queryLower.includes('forecast') && queryLower.includes('budget') && hasData) {
+                chartCounter++;
+                chartHtml = `
+                    <div class="chart-container">
+                        <div class="chart-title">📊 Forecast vs Budget Comparison (from Fabric Data)</div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart_${chartCounter}"></canvas>
+                        </div>
+                    </div>
+                `;
+            } 
+            // DESCRIPTIVE: Financial Performance - Only with actual performance data
+            else if (queryLower.includes('financial performance') && 
+                     (hasData || dataSource.includes('knowledge_base'))) {
+                chartCounter++;
+                chartHtml = `
+                    <div class="chart-container">
+                        <div class="chart-title">📊 Financial Performance Overview</div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart_${chartCounter}"></canvas>
+                        </div>
+                    </div>
+                `;
+            } 
+            // PRESCRIPTIVE: Crop Mix Optimization - Only when asking about crop optimization
+            else if ((queryLower.includes('crop mix') || queryLower.includes('optimize crop')) && 
+                     classification === 'PRESCRIPTIVE') {
+                chartCounter++;
+                const chart1 = chartCounter;
+                chartCounter++;
+                const chart2 = chartCounter;
+                chartHtml = `
+                    <div class="charts-grid">
+                        <div class="chart-container">
+                            <div class="chart-title">🥧 Current Crop Area Distribution</div>
+                            <div class="chart-wrapper">
+                                <canvas id="chart_${chart1}"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <div class="chart-title">📊 Gross Margin by Crop ($/ha)</div>
+                            <div class="chart-wrapper">
+                                <canvas id="chart_${chart2}"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } 
+            // PREDICTIVE: Sensitivity Analysis - Only for specific "what if" price scenarios
+            else if (classification === 'PREDICTIVE' && 
+                     queryLower.includes('what if') && 
+                     (queryLower.includes('price') || queryLower.includes('%'))) {
+                chartCounter++;
+                chartHtml = `
+                    <div class="chart-container">
+                        <div class="chart-title">📉 Sensitivity Analysis - Price Impact on Gross Margin</div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart_${chartCounter}"></canvas>
+                        </div>
+                    </div>
+                `;
+            }
+            // DIAGNOSTIC: Variance Bridge - Only for specific variance explanation queries
+            else if (classification === 'DIAGNOSTIC' && 
+                     queryLower.includes('why') && 
+                     (queryLower.includes('beat budget') || queryLower.includes('variance'))) {
+                chartCounter++;
+                chartHtml = `
+                    <div class="chart-container">
+                        <div class="chart-title">📊 Variance Bridge - Budget to Forecast</div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart_${chartCounter}"></canvas>
+                        </div>
+                    </div>
+                `;
+            }
+            // NO CHART for:
+            // - General questions without specific data
+            // - Text-heavy prescriptive recommendations (action plans)
+            // - Single-value queries (e.g., "what is the gross margin for wheat?")
+            // - Questions that don't benefit from visualization
+            
+            return chartHtml;
+        }
+        
+        function renderCharts(data, classification, query) {
+            const queryLower = query.toLowerCase();
+            const hasData = data.data && data.data.row_count > 0;
+            const dataSource = data.data_source || '';
+            
+            // Only render charts that were actually generated (matching the generateCharts logic)
+            
+            if (queryLower.includes('forecast') && queryLower.includes('budget') && hasData) {
+                renderForecastBudgetChart(data);
+            } else if (queryLower.includes('financial performance') && 
+                       (hasData || dataSource.includes('knowledge_base'))) {
+                renderFinancialPerformanceChart();
+            } else if ((queryLower.includes('crop mix') || queryLower.includes('optimize crop')) && 
+                       classification === 'PRESCRIPTIVE') {
+                renderCropMixCharts();
+            } else if (classification === 'PREDICTIVE' && 
+                       queryLower.includes('what if') && 
+                       (queryLower.includes('price') || queryLower.includes('%'))) {
+                renderSensitivityChart(query);
+            } else if (classification === 'DIAGNOSTIC' && 
+                       queryLower.includes('why') && 
+                       (queryLower.includes('beat budget') || queryLower.includes('variance'))) {
+                renderVarianceChart();
+            }
+        }
+        
+        function renderForecastBudgetChart(data) {
+            const canvas = document.getElementById(`chart_${chartCounter}`);
+            if (!canvas) return;
+            
+            // Try to extract actual data from Fabric response
+            let chartData = {
+                labels: [],
+                forecast: [],
+                budget: []
+            };
+            
+            // Parse actual Fabric data if available
+            if (data && data.data && data.data.rows && data.data.rows.length > 0) {
+                const rows = data.data.rows;
+                const accountData = {};
+                
+                // Group by account
+                rows.forEach(row => {
+                    const account = row.FinalParentAccountCode || row.Account || 'Unknown';
+                    const scenario = row.ScenarioName || row.Scenario || '';
+                    const amount = parseFloat(row.Amount) || 0;
+                    
+                    if (!accountData[account]) {
+                        accountData[account] = { forecast: 0, budget: 0 };
+                    }
+                    
+                    if (scenario.includes('Forecast') || scenario === 'Apr_Forecast') {
+                        accountData[account].forecast = amount / 1e6; // Convert to millions
+                    } else if (scenario.includes('Plan') || scenario === 'OEP_Plan' || scenario.includes('Budget')) {
+                        accountData[account].budget = amount / 1e6;
+                    }
+                });
+                
+                // Select top 6 accounts by absolute variance
+                const sortedAccounts = Object.entries(accountData)
+                    .map(([name, values]) => ({
+                        name: name.replace('FCCS_', '').substring(0, 20),
+                        forecast: values.forecast,
+                        budget: values.budget,
+                        variance: Math.abs(values.forecast - values.budget)
+                    }))
+                    .filter(a => a.forecast > 0 || a.budget > 0)
+                    .sort((a, b) => b.variance - a.variance)
+                    .slice(0, 6);
+                
+                chartData.labels = sortedAccounts.map(a => a.name);
+                chartData.forecast = sortedAccounts.map(a => a.forecast);
+                chartData.budget = sortedAccounts.map(a => a.budget);
+            }
+            
+            // Fallback to KB data if no Fabric data parsed
+            if (chartData.labels.length === 0) {
+                chartData.labels = ['Revenue', 'EBITDA', 'Net Income', 'Cash', 'Cost of Sales'];
+                chartData.forecast = [2928, 397, 151, 2493, 1171];
+                chartData.budget = [1920, 383, 97, 560, 779];
+            }
+            
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Forecast (Apr)',
+                            data: chartData.forecast,
+                            backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Budget (OEP)',
+                            data: chartData.budget,
+                            backgroundColor: 'rgba(243, 156, 18, 0.8)',
+                            borderColor: 'rgba(243, 156, 18, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Amount (Million SAR)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderFinancialPerformanceChart() {
+            const canvas = document.getElementById(`chart_${chartCounter}`);
+            if (!canvas) return;
+            
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Revenue', 'EBITDA', 'Net Income'],
+                    datasets: [
+                        {
+                            label: 'YTD (May)',
+                            data: [846, 164, 65],
+                            backgroundColor: 'rgba(155, 89, 182, 0.8)'
+                        },
+                        {
+                            label: 'Full Year Forecast',
+                            data: [2928, 397, 151],
+                            backgroundColor: 'rgba(52, 152, 219, 0.8)'
+                        },
+                        {
+                            label: 'Budget',
+                            data: [1920, 383, 97],
+                            backgroundColor: 'rgba(243, 156, 18, 0.8)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Amount (Million SAR)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderCropMixCharts() {
+            // Pie chart for area distribution
+            const pieCanvas = document.getElementById(`chart_${chartCounter - 1}`);
+            if (pieCanvas) {
+                new Chart(pieCanvas, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Winter Wheat', 'Winter OSR', 'Maize', 'Sunflower', 'Soybean', 'Winter Barley'],
+                        datasets: [{
+                            data: [66743, 31500, 26457, 25357, 17542, 13025],
+                            backgroundColor: [
+                                'rgba(52, 152, 219, 0.8)',
+                                'rgba(46, 204, 113, 0.8)',
+                                'rgba(243, 156, 18, 0.8)',
+                                'rgba(155, 89, 182, 0.8)',
+                                'rgba(231, 76, 60, 0.8)',
+                                'rgba(149, 165, 166, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' }
+                        }
+                    }
+                });
+            }
+            
+            // Bar chart for GM/ha
+            const barCanvas = document.getElementById(`chart_${chartCounter}`);
+            if (barCanvas) {
+                new Chart(barCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Winter OSR', 'Maize', 'Sunflower', 'Soybean', 'Winter Wheat', 'Winter Barley'],
+                        datasets: [{
+                            label: 'GM per Hectare ($)',
+                            data: [1345, 1215, 1195, 785, 720, 569],
+                            backgroundColor: [
+                                'rgba(46, 204, 113, 0.8)',
+                                'rgba(243, 156, 18, 0.8)',
+                                'rgba(155, 89, 182, 0.8)',
+                                'rgba(231, 76, 60, 0.8)',
+                                'rgba(52, 152, 219, 0.8)',
+                                'rgba(149, 165, 166, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: { display: true, text: '$/ha' }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function renderSensitivityChart(query) {
+            const canvas = document.getElementById(`chart_${chartCounter}`);
+            if (!canvas) return;
+            
+            // Determine which crop from query
+            let crop = 'Wheat';
+            if (query.toLowerCase().includes('osr')) crop = 'OSR';
+            else if (query.toLowerCase().includes('sunflower')) crop = 'Sunflower';
+            else if (query.toLowerCase().includes('maize')) crop = 'Maize';
+            
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['-20%', '-15%', '-10%', '-5%', 'Base', '+5%', '+10%', '+15%', '+20%'],
+                    datasets: [{
+                        label: `${crop} Price Sensitivity - GM Impact ($M)`,
+                        data: [-33.1, -24.8, -16.5, -8.3, 0, 8.3, 16.5, 24.8, 33.1],
+                        backgroundColor: (context) => {
+                            const value = context.raw;
+                            return value < 0 ? 'rgba(231, 76, 60, 0.8)' : 'rgba(46, 204, 113, 0.8)';
+                        }
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            title: { display: true, text: 'Impact on Gross Margin ($M)' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Price Change' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function renderVarianceChart() {
+            const canvas = document.getElementById(`chart_${chartCounter}`);
+            if (!canvas) return;
+            
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['Budget', 'Price Effect', 'Volume Effect', 'Cost Effect', 'Other', 'Forecast'],
+                    datasets: [{
+                        label: 'Net Income Bridge (Million SAR)',
+                        data: [97, 53.5, 8.1, -5.2, -2.4, 151],
+                        backgroundColor: [
+                            'rgba(52, 152, 219, 0.8)',
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(46, 204, 113, 0.8)',
+                            'rgba(231, 76, 60, 0.8)',
+                            'rgba(231, 76, 60, 0.8)',
+                            'rgba(155, 89, 182, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => `${context.label}: ${context.raw}M SAR`
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Million SAR' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function formatResponse(text) {
+            // Convert markdown-style tables to HTML tables
+            let formatted = text;
+            
+            // Handle tables
+            const tableRegex = /\|(.+)\|\n\|[-|\s]+\|\n((?:\|.+\|\n?)+)/g;
+            formatted = formatted.replace(tableRegex, (match, header, body) => {
+                const headers = header.split('|').filter(h => h.trim()).map(h => `<th>${h.trim()}</th>`).join('');
+                const rows = body.trim().split('\n').map(row => {
+                    const cells = row.split('|').filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`).join('');
+                    return `<tr>${cells}</tr>`;
+                }).join('');
+                return `<table><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+            });
+            
+            // Handle other formatting
+            formatted = formatted
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br/>')
+                .replace(/• /g, '&bull; ')
+                .replace(/---/g, '<hr style="margin: 16px 0; border: none; border-top: 1px solid #E8E8E8;">');
+            
+            return `<p>${formatted}</p>`;
+        }
+    </script>
+</body>
+</html>

@@ -1,7 +1,8 @@
 """
-SQL Generator Module - Enhanced Version 2.0
+SQL Generator Module - Enhanced Version 3.1
 Converts natural language queries to SQL for Microsoft Fabric
 Analytics-aware with Value-Driver Tree query patterns
+Uses FULL schema with VERIFIED column names
 
 December 2025
 """
@@ -17,91 +18,132 @@ from config import (
 
 
 # =============================================================================
-# ENHANCED SCHEMA DEFINITION
+# COMPLETE SCHEMA DEFINITION - VERIFIED COLUMN NAMES
 # =============================================================================
 
 ENHANCED_SCHEMA_INFO = """
-## CFG Ukraine Database Schema (Microsoft Fabric)
+## CFG Ukraine Database Schema (Microsoft Fabric - SALIC_Finance_Warehouse)
+## VERIFIED SCHEMA - Column names confirmed via discovery
 
 ### FACT TABLES
 
-#### vw_Fact_Actuals_SALIC_Ukraine (Primary Financial Facts)
-Main view for financial actuals, budget, and forecast data.
+#### Fact_Actuals (Actual Financial Data)
+Contains actual/historical financial transactions.
 
 | Column | Type | Description |
 |--------|------|-------------|
 | FactActualsKey | bigint | Primary key |
 | AccountKey | bigint | FK to Dim_Account |
-| EntityKey | bigint | FK to Dim_Entity (E250 = CFG Ukraine) |
+| EntityKey | bigint | FK to Dim_Entity |
+| DepartmentKey | bigint | FK to Dim_Department |
+| IntercompanyKey | bigint | Intercompany reference |
 | PeriodKey | bigint | FK to Dim_Period (1-12) |
 | ScenarioKey | bigint | FK to Dim_Scenario |
 | YearKey | bigint | FK to Dim_Year |
-| Amount | varchar | Financial amount (MUST CAST to DECIMAL) |
+| CurrencyKey | bigint | FK to Dim_Currency |
+| Amount | varchar | Financial amount (CAST to DECIMAL) |
+| FactDate | date | Transaction date |
+
+#### Fact_ForecastBudget (Budget & Forecast Data)
+Contains budget (OEP_Plan) and forecast (Apr_Forecast) data.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| FactFBKey | bigint | Primary key (NOT FactForecastBudgetKey!) |
+| AccountKey | bigint | FK to Dim_Account |
+| EntityKey | bigint | FK to Dim_Entity |
+| DepartmentKey | bigint | FK to Dim_Department |
+| CommodityKey | bigint | Commodity reference |
+| RegionKey | bigint | Region reference |
+| VersionKey | bigint | Version reference |
+| Future1Key | bigint | Reserved |
+| IntercompanyKey | bigint | Intercompany reference |
+| PeriodKey | bigint | FK to Dim_Period |
+| ScenarioKey | bigint | FK to Dim_Scenario |
+| YearKey | bigint | FK to Dim_Year |
+| CurrencyKey | bigint | FK to Dim_Currency |
+| Amount | varchar | Financial amount (CAST to DECIMAL) |
+
+#### vw_Fact_Actuals_SALIC_Ukraine (View - CFG Ukraine Actuals Only)
+Pre-filtered view for CFG Ukraine entity - ONLY contains Actuals scenario.
+Columns: FactActualsKey, AccountKey, DepartmentKey, EntityKey, PeriodKey, ScenarioKey, YearKey, CurrencyKey, Amount, FactDate
 
 ### DIMENSION TABLES
 
+#### Dim_Entity
+| Column | Type | Description |
+|--------|------|-------------|
+| EntityKey | bigint | Join key |
+| EntityCode | varchar | E250 = CFG Ukraine |
+| ParentEntityCode | varchar | Parent entity |
+| Description | varchar | Entity description (may be NULL) |
+
+NOTE: No EntityName column exists! Use EntityCode or Description.
+
 #### Dim_Account
-| Column | Type | Use |
-|--------|------|-----|
+| Column | Type | Description |
+|--------|------|-------------|
 | AccountKey | bigint | Join key |
-| AccountCode | varchar | Detail account |
-| FinalParentAccountCode | varchar | **USE THIS** for grouping |
-| Description | varchar | Account name |
+| AccountCode | varchar | Detail account code |
+| ParentAccountCode | varchar | Parent account |
+| Description | varchar | Account description |
+| FinalParentAccountCode | varchar | **USE THIS** for grouping/reporting |
+
+#### Dim_Department
+| Column | Type | Description |
+|--------|------|-------------|
+| DepartmentKey | bigint | Join key |
+| DepartmentCode | varchar | Department code |
+| ParentDepartmentCode | varchar | Parent department |
+| Description | varchar | Department description |
 
 #### Dim_Period
-| Column | Type | Use |
-|--------|------|-----|
+| Column | Type | Description |
+|--------|------|-------------|
 | PeriodKey | bigint | 1-12 for Jan-Dec |
 | PeriodName | varchar | Jan, Feb, Mar... |
 | PeriodNumber | int | Use for ORDER BY |
 | FiscalQuarter | varchar | Q1, Q2, Q3, Q4 |
+| FiscalYearLabel | varchar | FY24, FY25 |
+| YearKey | bigint | FK to Dim_Year |
 
 #### Dim_Year
-| Column | Type | Use |
-|--------|------|-----|
+| Column | Type | Description |
+|--------|------|-------------|
 | YearKey | bigint | 1=FY24, 2=FY25, 3=FY26 |
-| CalendarYear | int | 2024, 2025, 2026 |
 | FiscalYearLabel | varchar | FY24, FY25, FY26 |
+| CalendarYear | int | 2024, 2025, 2026 |
+| YearStartDate | date | Start of fiscal year |
+| YearEndDate | date | End of fiscal year |
 
 #### Dim_Scenario
-| Column | Type | Use |
-|--------|------|-----|
-| ScenarioKey | bigint | 1=Actual, 2=Forecast, 3=Budget |
+| Column | Type | Description |
+|--------|------|-------------|
+| ScenarioKey | bigint | 1=Actual, 2=Apr_Forecast, 3=OEP_Plan |
 | ScenarioName | varchar | Actual, Apr_Forecast, OEP_Plan |
+| ScenarioType | varchar | Type classification |
 
-### AVAILABLE ACCOUNT CATEGORIES (FinalParentAccountCode)
+#### Dim_Currency
+| Column | Type | Description |
+|--------|------|-------------|
+| CurrencyKey | bigint | Join key |
+| CurrencyCode | varchar | USD, SAR, UAH |
+| CurrencyName | varchar | Full currency name |
 
-**Revenue & Margin:**
-- Revenue
-- Cost of Sales
-- Gross Margin
+### KEY RELATIONSHIPS
 
-**Operating Expenses:**
-- General and administrative expenses
-- Selling and distribution expenses
-- Finance charge
+- E250 = CFG Ukraine entity code
+- Actuals are in Fact_Actuals (ScenarioKey=1)
+- Budget (OEP_Plan) is in Fact_ForecastBudget (ScenarioKey=3)
+- Forecast (Apr_Forecast) is in Fact_ForecastBudget (ScenarioKey=2)
+- vw_Fact_Actuals_SALIC_Ukraine ONLY has Actuals, not budget/forecast
 
-**Balance Sheet:**
-- Cash and cash_equivalents
-- Trade and other payables
-- Trade and other receivables
-- Intangible assets, net
-- Property plant and equipment
-
-**Equity:**
-- FCCS_Owners Equity
-- FCCS_Retained Earnings
-- FCCS_Other Reserves
-- FX Reserve
-
-### IMPORTANT: AVAILABLE TABLES ONLY
-The only fact table available is vw_Fact_Actuals_SALIC_Ukraine.
-Do NOT reference vw_Crop_Performance, vw_Sales_Detail, or any crop-specific views.
-All crop/operational data must come from the knowledge base, not SQL queries.
-
-### DATA RANGES
-- Financial Years: FY2024 (partial), FY2025 (full)
-- Scenarios: Actual, Apr_Forecast, OEP_Plan (Budget)
+### DATA COUNTS (Verified)
+- Fact_ForecastBudget: 78,492 total rows
+- E250 in Fact_ForecastBudget: 5,282 rows
+- Apr_Forecast: 20,866 rows
+- OEP_Plan (Budget): 57,626 rows
+- FY2025 data available
 """
 
 
@@ -114,11 +156,13 @@ QUERY_TEMPLATES = {
 SELECT 
     a.FinalParentAccountCode,
     SUM(CAST(f.Amount AS DECIMAL(18,2))) AS TotalAmount
-FROM vw_Fact_Actuals_SALIC_Ukraine f
+FROM Fact_Actuals f
 JOIN Dim_Account a ON f.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON f.EntityKey = e.EntityKey
 JOIN Dim_Year y ON f.YearKey = y.YearKey
 JOIN Dim_Scenario s ON f.ScenarioKey = s.ScenarioKey
-WHERE s.ScenarioName = 'Actual'
+WHERE e.EntityCode = 'E250'
+  AND s.ScenarioName = 'Actual'
   AND y.CalendarYear = {year}
 GROUP BY a.FinalParentAccountCode
 ORDER BY TotalAmount DESC;
@@ -132,12 +176,14 @@ SELECT
     p.FiscalQuarter,
     a.FinalParentAccountCode,
     SUM(CAST(f.Amount AS DECIMAL(18,2))) AS Amount
-FROM vw_Fact_Actuals_SALIC_Ukraine f
+FROM Fact_Actuals f
 JOIN Dim_Account a ON f.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON f.EntityKey = e.EntityKey
 JOIN Dim_Period p ON f.PeriodKey = p.PeriodKey
 JOIN Dim_Year y ON f.YearKey = y.YearKey
 JOIN Dim_Scenario s ON f.ScenarioKey = s.ScenarioKey
-WHERE a.FinalParentAccountCode = '{account_category}'
+WHERE e.EntityCode = 'E250'
+  AND a.FinalParentAccountCode = '{account_category}'
   AND s.ScenarioName = 'Actual'
   AND y.CalendarYear = {year}
 GROUP BY y.CalendarYear, p.PeriodName, p.PeriodNumber, p.FiscalQuarter, a.FinalParentAccountCode
@@ -145,20 +191,99 @@ ORDER BY p.PeriodNumber;
 """,
 
     "budget_vs_actual": """
+-- Actuals from Fact_Actuals
 SELECT 
     a.FinalParentAccountCode,
-    SUM(CASE WHEN s.ScenarioName = 'Actual' THEN CAST(f.Amount AS DECIMAL(18,2)) ELSE 0 END) AS Actual,
-    SUM(CASE WHEN s.ScenarioName = 'OEP_Plan' THEN CAST(f.Amount AS DECIMAL(18,2)) ELSE 0 END) AS Budget,
-    SUM(CASE WHEN s.ScenarioName = 'Actual' THEN CAST(f.Amount AS DECIMAL(18,2)) ELSE 0 END) -
-    SUM(CASE WHEN s.ScenarioName = 'OEP_Plan' THEN CAST(f.Amount AS DECIMAL(18,2)) ELSE 0 END) AS Variance
-FROM vw_Fact_Actuals_SALIC_Ukraine f
+    'Actual' AS Scenario,
+    SUM(CAST(f.Amount AS DECIMAL(18,2))) AS Amount
+FROM Fact_Actuals f
 JOIN Dim_Account a ON f.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON f.EntityKey = e.EntityKey
 JOIN Dim_Year y ON f.YearKey = y.YearKey
 JOIN Dim_Scenario s ON f.ScenarioKey = s.ScenarioKey
-WHERE y.CalendarYear = {year}
+WHERE e.EntityCode = 'E250'
+  AND s.ScenarioName = 'Actual'
+  AND y.CalendarYear = {year}
 GROUP BY a.FinalParentAccountCode
-ORDER BY ABS(SUM(CASE WHEN s.ScenarioName = 'Actual' THEN CAST(f.Amount AS DECIMAL(18,2)) ELSE 0 END) -
-    SUM(CASE WHEN s.ScenarioName = 'OEP_Plan' THEN CAST(f.Amount AS DECIMAL(18,2)) ELSE 0 END)) DESC;
+
+UNION ALL
+
+-- Budget from Fact_ForecastBudget
+SELECT 
+    a.FinalParentAccountCode,
+    'Budget' AS Scenario,
+    SUM(CAST(fb.Amount AS DECIMAL(18,2))) AS Amount
+FROM Fact_ForecastBudget fb
+JOIN Dim_Account a ON fb.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON fb.EntityKey = e.EntityKey
+JOIN Dim_Year y ON fb.YearKey = y.YearKey
+JOIN Dim_Scenario s ON fb.ScenarioKey = s.ScenarioKey
+WHERE e.EntityCode = 'E250'
+  AND s.ScenarioName = 'OEP_Plan'
+  AND y.CalendarYear = {year}
+GROUP BY a.FinalParentAccountCode
+
+ORDER BY FinalParentAccountCode, Scenario;
+""",
+
+    "forecast_vs_budget": """
+-- Forecast from Fact_ForecastBudget
+SELECT 
+    a.FinalParentAccountCode,
+    'Forecast' AS Scenario,
+    SUM(CAST(fb.Amount AS DECIMAL(18,2))) AS Amount
+FROM Fact_ForecastBudget fb
+JOIN Dim_Account a ON fb.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON fb.EntityKey = e.EntityKey
+JOIN Dim_Year y ON fb.YearKey = y.YearKey
+JOIN Dim_Scenario s ON fb.ScenarioKey = s.ScenarioKey
+WHERE e.EntityCode = 'E250'
+  AND s.ScenarioName = 'Apr_Forecast'
+  AND y.CalendarYear = {year}
+GROUP BY a.FinalParentAccountCode
+
+UNION ALL
+
+-- Budget from Fact_ForecastBudget
+SELECT 
+    a.FinalParentAccountCode,
+    'Budget' AS Scenario,
+    SUM(CAST(fb.Amount AS DECIMAL(18,2))) AS Amount
+FROM Fact_ForecastBudget fb
+JOIN Dim_Account a ON fb.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON fb.EntityKey = e.EntityKey
+JOIN Dim_Year y ON fb.YearKey = y.YearKey
+JOIN Dim_Scenario s ON fb.ScenarioKey = s.ScenarioKey
+WHERE e.EntityCode = 'E250'
+  AND s.ScenarioName = 'OEP_Plan'
+  AND y.CalendarYear = {year}
+GROUP BY a.FinalParentAccountCode
+
+ORDER BY FinalParentAccountCode, Scenario;
+""",
+
+    "all_scenarios": """
+-- All three scenarios combined
+SELECT 
+    a.FinalParentAccountCode,
+    s.ScenarioName,
+    SUM(CAST(COALESCE(f.Amount, fb.Amount) AS DECIMAL(18,2))) AS Amount
+FROM (
+    SELECT AccountKey, EntityKey, YearKey, ScenarioKey, Amount FROM Fact_Actuals
+    UNION ALL
+    SELECT AccountKey, EntityKey, YearKey, ScenarioKey, Amount FROM Fact_ForecastBudget
+) combined (AccountKey, EntityKey, YearKey, ScenarioKey, Amount)
+CROSS APPLY (SELECT NULL AS dummy) AS placeholder
+LEFT JOIN Fact_Actuals f ON 1=0
+LEFT JOIN Fact_ForecastBudget fb ON 1=0
+JOIN Dim_Account a ON combined.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON combined.EntityKey = e.EntityKey
+JOIN Dim_Year y ON combined.YearKey = y.YearKey
+JOIN Dim_Scenario s ON combined.ScenarioKey = s.ScenarioKey
+WHERE e.EntityCode = 'E250'
+  AND y.CalendarYear = {year}
+GROUP BY a.FinalParentAccountCode, s.ScenarioName
+ORDER BY a.FinalParentAccountCode, s.ScenarioName;
 """,
 
     "quarterly_summary": """

@@ -1,0 +1,1505 @@
+{
+  "metadata": {
+    "version": "3.0",
+    "created_date": "2025-12-14",
+    "source_documents": [
+      "Financial_Performance___May_2025_.pdf",
+      "Ukraine_Performance_report_2025_06.xlsx",
+      "Independent_Driver.xlsx",
+      "Independent_Variable.xlsx",
+      "Guide_for_AI_Model.DOCX",
+      "Data_Mapping.xlsx",
+      "Review_of_Spring_Cropping_2025.pdf",
+      "Management_Report_March_2025",
+      "Tech_Cards_2026",
+      "Ukraine_Power_BI_CEO_Report"
+    ],
+    "entity": "CFG Ukraine (Continental Farmers Group)",
+    "parent_company": "SALIC (Saudi Agricultural and Livestock Investment Company)",
+    "reporting_currency": "USD (with SAR conversion at 3.75)"
+  },
+  "value_driver_tree": {
+    "description": "Value-driver tree for crop-based farming economics from Guide_for_AI_Model.DOCX",
+    "formulas": {
+      "volume": "Crop Area (ha) \u00d7 Yield (t/ha)",
+      "revenue": "Volume \u00d7 Net Sales Price",
+      "cost_of_production": "Volume \u00d7 Production Cost per ton",
+      "gross_margin": "Revenue - Cost of Production",
+      "production_cost_per_ton": "Direct Costs ($/ha) \u00f7 Yield (t/ha)",
+      "ebitda": "Gross Profit - G&A - S&D + Other Income + Depreciation",
+      "gm_per_ha": "Gross Margin / Total Area",
+      "gm_percent": "(Gross Margin / Revenue) \u00d7 100"
+    },
+    "variance_decomposition": {
+      "area_effect": "(Actual Area - Budget Area) \u00d7 Budget Yield \u00d7 Budget Price",
+      "yield_effect": "Actual Area \u00d7 (Actual Yield - Budget Yield) \u00d7 Budget Price",
+      "price_effect": "Actual Volume \u00d7 (Actual Price - Budget Price)",
+      "cost_effect": "Actual Volume \u00d7 (Budget Cost/t - Actual Cost/t)",
+      "fx_effect": "Revenue USD \u00d7 (Actual FX - Budget FX)"
+    }
+  },
+  "fy2025_financials": {
+    "source": "Ukraine_Performance_report_2025_06.xlsx - PL-101 sheet",
+    "currency": "USD thousands",
+    "ytd_june_2025": {
+      "revenue": 252338,
+      "cost_of_sales": -228723,
+      "gross_profit": 53110,
+      "gain_loss_fv_ba_ap": 29495,
+      "general_admin_expenses": -8590,
+      "selling_distribution_expenses": -4617,
+      "other_income_expense_net": 20,
+      "operating_profit": 39922,
+      "finance_external": -1593,
+      "finance_intercompany": -752,
+      "finance_lease": -12143,
+      "forex_on_loans": -297,
+      "profit_before_tax": 25137,
+      "current_tax": -747,
+      "net_profit": 24390,
+      "ebitda": 56236,
+      "depreciation_total": -16314
+    },
+    "budget_ytd_june_2025": {
+      "revenue": 239361,
+      "cost_of_sales": -235701,
+      "gross_profit": 4749,
+      "operating_profit": -10963,
+      "net_profit": -25547,
+      "ebitda": 4462
+    },
+    "full_year_forecast_2025": {
+      "revenue": 783607,
+      "cost_of_sales": -754795,
+      "gross_profit": 115984,
+      "gain_loss_fv_ba_ap": 87173,
+      "general_admin_expenses": -23348,
+      "selling_distribution_expenses": -12529,
+      "other_income_expense_net": -3280,
+      "operating_profit": 76827,
+      "finance_costs_total": -29223,
+      "profit_before_tax": 47605,
+      "current_tax": -1753,
+      "net_profit": 45852,
+      "ebitda": 110554,
+      "depreciation_total": -33727
+    },
+    "full_year_budget_2025": {
+      "revenue": 752035,
+      "cost_of_sales": -741804,
+      "gross_profit": 103682,
+      "gain_loss_fv_ba_ap": 93451,
+      "general_admin_expenses": -23327,
+      "selling_distribution_expenses": -9696,
+      "other_income_expense_net": -394,
+      "operating_profit": 70265,
+      "profit_before_tax": 38597,
+      "net_profit": 37906,
+      "ebitda": 102059
+    },
+    "sar_conversion": {
+      "exchange_rate": 3.75,
+      "forecast_revenue_sar": 2939026000,
+      "forecast_ebitda_sar": 414578000,
+      "forecast_net_income_sar": 171945000,
+      "ytd_may_revenue_sar": 846000000,
+      "ytd_may_net_income_sar": 65000000
+    }
+  },
+  "crop_structure_2025": {
+    "source": "Review_of_Spring_Cropping_2025.pdf",
+    "total_area_ha": 180530,
+    "winter_spring_split": {
+      "spring_crops_ha": 95694,
+      "spring_crops_pct": 53,
+      "winter_crops_ha": 84836,
+      "winter_crops_pct": 47
+    },
+    "area_by_crop": {
+      "soybean": 49519,
+      "winter_wheat": 39533,
+      "winter_osr": 32786,
+      "corn": 25911,
+      "sunflower": 15615,
+      "winter_barley": 12517,
+      "sugar_beet": 2519,
+      "potatoes": 2130,
+      "other": 146
+    },
+    "regional_distribution": {
+      "sunflower": {
+        "polissya_pct": 31,
+        "polissya_ha": 4744,
+        "halych_pct": 30,
+        "halych_ha": 4718,
+        "bukovyna_pct": 21,
+        "bukovyna_ha": 3264,
+        "lviv_pct": 14,
+        "lviv_ha": 2222,
+        "tsentr_pct": 4,
+        "tsentr_ha": 666
+      },
+      "soybean": {
+        "halych_pct": 32,
+        "halych_ha": 16026,
+        "tsentr_pct": 26,
+        "tsentr_ha": 12736,
+        "polissya_pct": 26,
+        "polissya_ha": 12811,
+        "lviv_pct": 9,
+        "lviv_ha": 4369,
+        "bukovyna_pct": 7,
+        "bukovyna_ha": 3577
+      },
+      "corn": {
+        "lviv_pct": 45,
+        "lviv_ha": 11755,
+        "halych_pct": 24,
+        "halych_ha": 6196,
+        "polissya_pct": 17,
+        "polissya_ha": 4454,
+        "tsentr_pct": 14,
+        "tsentr_ha": 3506
+      }
+    }
+  },
+  "crop_conditions_2025": {
+    "source": "Review_of_Spring_Cropping_2025.pdf - Page 2-4",
+    "assessment_date": "2025-03-16",
+    "winter_osr": {
+      "total_area_ha": 32786,
+      "condition_good_pct": 85,
+      "condition_good_ha": 27872,
+      "condition_satisfactory_pct": 14,
+      "condition_satisfactory_ha": 4586,
+      "condition_bad_pct": 1,
+      "condition_bad_ha": 328,
+      "damaged_by_frost_pct": 44,
+      "damaged_by_frost_ha": 14458,
+      "yield_2023_actual": 3.73,
+      "yield_2024_actual": 3.45,
+      "yield_2025_plan": 3.33,
+      "frost_survival": {
+        "above_90pct_survival_ha": 5439,
+        "above_90pct_survival_pct": 38,
+        "75_90pct_survival_ha": 7296,
+        "75_90pct_survival_pct": 50,
+        "below_75pct_survival_ha": 1723,
+        "below_75pct_survival_pct": 12
+      }
+    },
+    "winter_wheat": {
+      "total_area_ha": 39533,
+      "condition_good_pct": 61,
+      "condition_good_ha": 24202,
+      "condition_satisfactory_pct": 20,
+      "condition_satisfactory_ha": 7864,
+      "condition_bad_pct": 19,
+      "condition_bad_ha": 7467,
+      "damaged_by_frost_pct": 39,
+      "damaged_by_frost_ha": 15352,
+      "yield_2023_actual": 7.22,
+      "yield_2024_actual": 7.18,
+      "yield_2025_plan": 6.46,
+      "frost_survival": {
+        "above_90pct_survival_ha": 10610,
+        "above_90pct_survival_pct": 69,
+        "75_90pct_survival_ha": 4742,
+        "75_90pct_survival_pct": 31
+      }
+    },
+    "winter_barley": {
+      "total_area_ha": 12517,
+      "condition_good_pct": 91,
+      "condition_good_ha": 11419,
+      "condition_satisfactory_pct": 5,
+      "condition_satisfactory_ha": 603,
+      "condition_bad_pct": 4,
+      "condition_bad_ha": 494,
+      "damaged_by_frost_pct": 19,
+      "damaged_by_frost_ha": 2392,
+      "yield_2023_actual": 6.39,
+      "yield_2024_actual": 6.54,
+      "yield_2025_plan": 6.14,
+      "frost_survival": {
+        "above_90pct_survival_ha": 1981,
+        "above_90pct_survival_pct": 83,
+        "75_90pct_survival_ha": 410,
+        "75_90pct_survival_pct": 17
+      }
+    },
+    "condition_definitions": {
+      "good_osr": "DS=19 OR DS=20 OR CD>20 OR DS>=19 AND CD>10",
+      "good_wheat_barley": "DS>=22 AND CD>=4.5",
+      "bad_osr": "DS<=14 OR CD<=5 OR (DS=15 OR DS=16 AND CD<15)",
+      "bad_wheat": "DS<=12 OR CD<=3 OR (DS<=21 AND CD<=3.5) OR (DS>=22 AND CD<=2.5)",
+      "bad_barley": "DS<=13 OR CD<=4 OR (DS<=21 AND CD<=3.5) OR (DS>=22 AND CD<=2.5)",
+      "ds_definition": "Development Stage",
+      "cd_definition": "Crop Density per m\u00b2"
+    }
+  },
+  "kpi_2025_per_ha": {
+    "source": "Review_of_Spring_Cropping_2025.pdf - Pages 6-9",
+    "currency": "USD per hectare",
+    "winter_crops": {
+      "winter_osr": {
+        "area_budget": 34587,
+        "area_forecast": 32786,
+        "area_variance": -1801,
+        "yield_budget": 3.3,
+        "yield_forecast": 3.3,
+        "yield_variance": 0.0,
+        "net_income_budget": 1365,
+        "net_income_forecast": 1383,
+        "net_income_variance": 18.1,
+        "total_expenses_budget": 1098,
+        "total_expenses_forecast": 1095,
+        "total_expenses_variance": -3.5,
+        "direct_costs_budget": 594,
+        "direct_costs_forecast": 575,
+        "direct_costs_variance": -19.4,
+        "ebitda_budget": 266,
+        "ebitda_forecast": 288,
+        "ebitda_variance": 21.6,
+        "cost_profitability_budget": 20,
+        "cost_profitability_forecast": 21,
+        "income_profitability_budget": 24,
+        "income_profitability_forecast": 26
+      },
+      "winter_wheat": {
+        "area_budget": 40729,
+        "area_forecast": 39533,
+        "area_variance": -1196,
+        "yield_budget": 6.5,
+        "yield_forecast": 6.5,
+        "yield_variance": 0.0,
+        "net_income_budget": 1258,
+        "net_income_forecast": 1273,
+        "net_income_variance": 14.5,
+        "total_expenses_budget": 1027,
+        "total_expenses_forecast": 1006,
+        "total_expenses_variance": -20.3,
+        "direct_costs_budget": 511,
+        "direct_costs_forecast": 480,
+        "direct_costs_variance": -30.4,
+        "ebitda_budget": 232,
+        "ebitda_forecast": 267,
+        "ebitda_variance": 34.9,
+        "cost_profitability_budget": 18,
+        "cost_profitability_forecast": 21,
+        "income_profitability_budget": 23,
+        "income_profitability_forecast": 27
+      },
+      "winter_barley": {
+        "area_budget": 13235,
+        "area_forecast": 12517,
+        "area_variance": -718,
+        "yield_budget": 6.1,
+        "yield_forecast": 6.1,
+        "yield_variance": 0.0,
+        "net_income_budget": 1063,
+        "net_income_forecast": 1071,
+        "net_income_variance": 8.0,
+        "total_expenses_budget": 910,
+        "total_expenses_forecast": 911,
+        "total_expenses_variance": 0.8,
+        "direct_costs_budget": 414,
+        "direct_costs_forecast": 403,
+        "direct_costs_variance": -11.0,
+        "ebitda_budget": 153,
+        "ebitda_forecast": 160,
+        "ebitda_variance": 7.3,
+        "cost_profitability_budget": 14,
+        "cost_profitability_forecast": 15,
+        "income_profitability_budget": 17,
+        "income_profitability_forecast": 18
+      }
+    },
+    "spring_crops": {
+      "sunflower": {
+        "area_budget": 14532,
+        "area_forecast": 15615,
+        "area_variance": 1084,
+        "yield_budget": 3.3,
+        "yield_forecast": 3.3,
+        "yield_variance": 0.0,
+        "net_income_budget": 1378,
+        "net_income_forecast": 1388,
+        "net_income_variance": 10.7,
+        "total_expenses_budget": 1007,
+        "total_expenses_forecast": 992,
+        "total_expenses_variance": -15.0,
+        "direct_costs_budget": 504,
+        "direct_costs_forecast": 475,
+        "direct_costs_variance": -28.1,
+        "ebitda_budget": 371,
+        "ebitda_forecast": 397,
+        "ebitda_variance": 25.8,
+        "income_profitability_budget": 37,
+        "income_profitability_forecast": 40
+      },
+      "soybean": {
+        "area_budget": 49279,
+        "area_forecast": 49519,
+        "area_variance": 240,
+        "yield_budget": 3.2,
+        "yield_forecast": 3.2,
+        "yield_variance": 0.0,
+        "net_income_budget": 1382,
+        "net_income_forecast": 1398,
+        "net_income_variance": 15.9,
+        "total_expenses_budget": 892,
+        "total_expenses_forecast": 898,
+        "total_expenses_variance": 6.0,
+        "direct_costs_budget": 384,
+        "direct_costs_forecast": 383,
+        "direct_costs_variance": -0.8,
+        "ebitda_budget": 490,
+        "ebitda_forecast": 500,
+        "ebitda_variance": 9.9,
+        "income_profitability_budget": 55,
+        "income_profitability_forecast": 56
+      },
+      "corn": {
+        "area_budget": 26447,
+        "area_forecast": 25911,
+        "area_variance": -536,
+        "yield_budget": 10.3,
+        "yield_forecast": 10.4,
+        "yield_variance": 0.0,
+        "net_income_budget": 1744,
+        "net_income_forecast": 1776,
+        "net_income_variance": 31.4,
+        "total_expenses_budget": 1613,
+        "total_expenses_forecast": 1604,
+        "total_expenses_variance": -8.6,
+        "direct_costs_budget": 1101,
+        "direct_costs_forecast": 1088,
+        "direct_costs_variance": -12.2,
+        "ebitda_budget": 131,
+        "ebitda_forecast": 171,
+        "ebitda_variance": 40.0,
+        "income_profitability_budget": 8,
+        "income_profitability_forecast": 11
+      },
+      "sugar_beet": {
+        "area_budget": 2551,
+        "area_forecast": 2519,
+        "area_variance": -32,
+        "yield_budget": 62.0,
+        "yield_forecast": 62.0,
+        "yield_variance": 0.0,
+        "net_income_budget": 2381,
+        "net_income_forecast": 2394,
+        "net_income_variance": 13.3,
+        "total_expenses_budget": 1748,
+        "total_expenses_forecast": 1752,
+        "total_expenses_variance": 3.8,
+        "direct_costs_budget": 1259,
+        "direct_costs_forecast": 1255,
+        "direct_costs_variance": -3.3,
+        "ebitda_budget": 633,
+        "ebitda_forecast": 642,
+        "ebitda_variance": 9.5,
+        "income_profitability_budget": 36,
+        "income_profitability_forecast": 37
+      }
+    },
+    "potatoes": {
+      "processing": {
+        "area_budget": 1187,
+        "area_forecast": 1268,
+        "area_variance": 81,
+        "yield_budget": 34.1,
+        "yield_forecast": 34.1,
+        "net_income_budget": 7844,
+        "net_income_forecast": 7812,
+        "ebitda_budget": 1746,
+        "ebitda_forecast": 2107,
+        "ebitda_variance": 199
+      },
+      "seed": {
+        "area_budget": 287,
+        "area_forecast": 356,
+        "area_variance": 69,
+        "yield_budget": 32.0,
+        "yield_forecast": 32.0,
+        "net_income_budget": 8098,
+        "net_income_forecast": 8107,
+        "ebitda_budget": 18,
+        "ebitda_forecast": 499,
+        "ebitda_variance": 450
+      },
+      "table": {
+        "area_budget": 512,
+        "area_forecast": 506,
+        "area_variance": -6,
+        "yield_budget": 45.2,
+        "yield_forecast": 45.2,
+        "net_income_budget": 8145,
+        "net_income_forecast": 8142,
+        "ebitda_budget": 1756,
+        "ebitda_forecast": 2152,
+        "ebitda_variance": 314
+      },
+      "total": {
+        "area_budget": 1986,
+        "area_forecast": 2129,
+        "area_variance": 144,
+        "ebitda_budget": 1493,
+        "ebitda_forecast": 1849,
+        "ebitda_variance": 356
+      }
+    },
+    "total_farm": {
+      "area_budget": 183455,
+      "area_forecast": 180676,
+      "area_variance": -2778,
+      "net_income_budget": 1466,
+      "net_income_forecast": 1490,
+      "net_income_variance": 24,
+      "total_expenses_budget": 1148,
+      "total_expenses_forecast": 1141,
+      "total_expenses_variance": -6.6,
+      "direct_costs_budget": 617,
+      "direct_costs_forecast": 601,
+      "direct_costs_variance": -16.0,
+      "ebitda_budget": 319,
+      "ebitda_forecast": 349,
+      "ebitda_variance": 30.6,
+      "cost_profitability_budget": 22,
+      "cost_profitability_forecast": 23,
+      "income_profitability_budget": 28,
+      "income_profitability_forecast": 31
+    }
+  },
+  "direct_cost_breakdown_per_ha": {
+    "source": "Review_of_Spring_Cropping_2025.pdf - Pages 6-7",
+    "currency": "USD per hectare",
+    "components": {
+      "salary_tax": {
+        "budget": 17,
+        "forecast": 13
+      },
+      "fuel": {
+        "budget": 74,
+        "forecast": 65
+      },
+      "seeds": {
+        "budget": 76,
+        "forecast": 78
+      },
+      "fertilizers": {
+        "budget": 155,
+        "forecast": 149
+      },
+      "crop_protection_cpa": {
+        "budget": 106,
+        "forecast": 90
+      },
+      "grow_harvest_services_external": {
+        "budget": 16,
+        "forecast": 17
+      },
+      "grow_harvest_services_internal": {
+        "budget": null,
+        "forecast": 16
+      },
+      "transportation_services": {
+        "budget": 58,
+        "forecast": 58
+      },
+      "elevators_services": {
+        "budget": 114,
+        "forecast": 116
+      }
+    },
+    "indirect_costs": {
+      "land_rent": {
+        "budget": 181,
+        "forecast": 184
+      },
+      "general_production_costs": {
+        "budget": 249,
+        "forecast": 254
+      },
+      "administrative_expenses": {
+        "budget": 91,
+        "forecast": 93
+      },
+      "other_income_fx_costs": {
+        "budget": 9,
+        "forecast": 9
+      }
+    }
+  },
+  "crop_ranking_by_ebitda_per_ha": [
+    {
+      "rank": 1,
+      "crop": "sugar_beet",
+      "ebitda_per_ha": 642,
+      "area_ha": 2519
+    },
+    {
+      "rank": 2,
+      "crop": "soybean",
+      "ebitda_per_ha": 500,
+      "area_ha": 49519
+    },
+    {
+      "rank": 3,
+      "crop": "sunflower",
+      "ebitda_per_ha": 397,
+      "area_ha": 15615
+    },
+    {
+      "rank": 4,
+      "crop": "winter_osr",
+      "ebitda_per_ha": 288,
+      "area_ha": 32786
+    },
+    {
+      "rank": 5,
+      "crop": "winter_wheat",
+      "ebitda_per_ha": 267,
+      "area_ha": 39533
+    },
+    {
+      "rank": 6,
+      "crop": "corn",
+      "ebitda_per_ha": 171,
+      "area_ha": 25911
+    },
+    {
+      "rank": 7,
+      "crop": "winter_barley",
+      "ebitda_per_ha": 160,
+      "area_ha": 12517
+    }
+  ],
+  "soil_moisture_2025": {
+    "source": "Review_of_Spring_Cropping_2025.pdf - Page 10",
+    "assessment_date": "February 2025",
+    "comparison_date": "March 2024",
+    "february_2025": {
+      "moisture_0_20cm_pct": 23.76,
+      "moisture_0_60cm_pct": 22.87,
+      "moisture_0_100cm_pct": 22.68,
+      "reserve_0_20cm_mm": 35.51,
+      "reserve_0_20cm_vs_norm_pct": -11.21,
+      "reserve_0_60cm_mm": 106.45,
+      "reserve_0_60cm_vs_norm_pct": 6.45,
+      "reserve_0_100cm_mm": 183.33,
+      "reserve_0_100cm_vs_norm_pct": 22.22
+    },
+    "march_2024": {
+      "moisture_0_20cm_pct": 24.11,
+      "moisture_0_60cm_pct": 24.92,
+      "moisture_0_100cm_pct": 25.68,
+      "reserve_0_20cm_mm": 34.91,
+      "reserve_0_60cm_mm": 112.56,
+      "reserve_0_100cm_mm": 194.8
+    },
+    "regional_reserves_feb_2025": {
+      "bukovyna": {
+        "20cm": 50,
+        "60cm": 130,
+        "100cm": 218
+      },
+      "halych": {
+        "20cm": 41,
+        "60cm": 118,
+        "100cm": 195
+      },
+      "polissya": {
+        "20cm": 35,
+        "60cm": 110,
+        "100cm": 193
+      },
+      "center": {
+        "20cm": 31,
+        "60cm": 99,
+        "100cm": 163
+      },
+      "lviv": {
+        "20cm": 33,
+        "60cm": 98,
+        "100cm": 183
+      }
+    },
+    "key_insight": "Reserves of productive moisture are 15-30% less than last year, but within average long-term data. Total field moisture capacity is 80-85%."
+  },
+  "field_operations_2025": {
+    "source": "Review_of_Spring_Cropping_2025.pdf - Pages 12-15",
+    "fertilization_progress": {
+      "winter_osr": {
+        "total_plan_ha": 67599,
+        "completed_ha": 66359,
+        "completion_pct": 98.2,
+        "remaining_ha": 1240,
+        "fert_1_nitrogen_sulfur": {
+          "plan": 32786,
+          "done": 32786,
+          "pct": 100
+        },
+        "fert_2_nitrogen": {
+          "plan": 32786,
+          "done": 32786,
+          "pct": 100
+        },
+        "fert_3_nitrogen": {
+          "plan": 2027,
+          "done": 787,
+          "pct": 39,
+          "end_date": "28.03.2025"
+        }
+      },
+      "winter_wheat": {
+        "total_plan_ha": 80640,
+        "completed_ha": 41517,
+        "completion_pct": 51.5,
+        "remaining_ha": 39123,
+        "fert_1_nitrogen": {
+          "plan": 39532,
+          "done": 39532,
+          "pct": 100
+        },
+        "fert_2_nitrogen": {
+          "plan": 39532,
+          "done": 1985,
+          "pct": 5,
+          "end_date": "20.04.2025"
+        },
+        "fert_3_nitrogen": {
+          "plan": 1083,
+          "done": 0,
+          "pct": 0,
+          "end_date": "20.05.2025"
+        },
+        "fert_4_nitrogen": {
+          "plan": 492,
+          "done": 0,
+          "pct": 0,
+          "end_date": "20.05.2025"
+        }
+      },
+      "winter_barley": {
+        "total_plan_ha": 23557,
+        "completed_ha": 12517,
+        "completion_pct": 53.1,
+        "remaining_ha": 11041,
+        "fert_1_nitrogen": {
+          "plan": 12517,
+          "done": 12517,
+          "pct": 100
+        },
+        "fert_2_nitrogen": {
+          "plan": 11041,
+          "done": 0,
+          "pct": 0,
+          "end_date": "15.04.2025"
+        }
+      }
+    },
+    "tillage_spring_crops": {
+      "total_area_ha": 76349,
+      "start_date": "31.03.2025",
+      "end_date": "05.05.2025",
+      "sunflower": {
+        "area_ha": 9769,
+        "start_date": "31.03.2025",
+        "end_date": "17.04.2025",
+        "days": 17,
+        "by_region": {
+          "lviv": {
+            "ha": 4743,
+            "days": 8
+          },
+          "halych": {
+            "ha": 1741,
+            "days": 8
+          },
+          "bukovyna": {
+            "ha": 1652,
+            "days": 17
+          },
+          "tsentr": {
+            "ha": 967,
+            "days": 4
+          },
+          "polissia": {
+            "ha": 666,
+            "days": 3
+          }
+        }
+      },
+      "soybean": {
+        "area_ha": 42350,
+        "start_date": "10.04.2025",
+        "end_date": "05.05.2025",
+        "days": 25,
+        "by_region": {
+          "halych": {
+            "ha": 16024,
+            "days": 20
+          },
+          "lviv": {
+            "ha": 10891,
+            "days": 18
+          },
+          "tsentr": {
+            "ha": 9260,
+            "days": 11
+          },
+          "polissia": {
+            "ha": 4381,
+            "days": 13
+          },
+          "bukovyna": {
+            "ha": 1795,
+            "days": 10
+          }
+        }
+      },
+      "corn": {
+        "area_ha": 24229,
+        "start_date": "09.04.2025",
+        "end_date": "25.04.2025",
+        "days": 16,
+        "by_region": {
+          "tsentr": {
+            "ha": 11735,
+            "days": 9
+          },
+          "halych": {
+            "ha": 4963,
+            "days": 7
+          },
+          "lviv": {
+            "ha": 4024,
+            "days": 11
+          },
+          "polissia": {
+            "ha": 3506,
+            "days": 13
+          }
+        }
+      }
+    },
+    "seeding_spring_crops": {
+      "source": "Seeding_Spring_Crops.xlsx",
+      "sunflower": {
+        "total_area_ha": 15653,
+        "start_date": "01.04.2025",
+        "end_date": "18.04.2025",
+        "by_region": {
+          "tsentr": {
+            "ha": 4718,
+            "start": "07.04.2025",
+            "end": "11.04.2025",
+            "days": 4
+          },
+          "lviv": {
+            "ha": 4744,
+            "start": "02.04.2025",
+            "end": "10.04.2025",
+            "days": 8
+          },
+          "bukovyna": {
+            "ha": 3303,
+            "start": "01.04.2025",
+            "end": "18.04.2025",
+            "days": 17
+          },
+          "halych": {
+            "ha": 2222,
+            "start": "05.04.2025",
+            "end": "13.04.2025",
+            "days": 8
+          },
+          "polissia": {
+            "ha": 666,
+            "start": "05.04.2025",
+            "end": "08.04.2025",
+            "days": 3
+          }
+        }
+      },
+      "soybean": {
+        "total_area_ha": 49533,
+        "start_date": "11.04.2025",
+        "end_date": "06.05.2025",
+        "by_region": {
+          "halych": {
+            "ha": 16026,
+            "start": "15.04.2025",
+            "end": "05.05.2025",
+            "days": 20
+          },
+          "tsentr": {
+            "ha": 12811,
+            "start": "25.04.2025",
+            "end": "06.05.2025",
+            "days": 11
+          },
+          "lviv": {
+            "ha": 12736,
+            "start": "15.04.2025",
+            "end": "03.05.2025",
+            "days": 18
+          },
+          "polissia": {
+            "ha": 4369,
+            "start": "11.04.2025",
+            "end": "24.04.2025",
+            "days": 13
+          },
+          "bukovyna": {
+            "ha": 3591,
+            "start": "20.04.2025",
+            "end": "30.04.2025",
+            "days": 10
+          }
+        }
+      },
+      "corn": {
+        "total_area_ha": 25901,
+        "start_date": "10.04.2025",
+        "end_date": "26.04.2025",
+        "by_region": {
+          "tsentr": {
+            "ha": 11735,
+            "start": "15.04.2025",
+            "end": "24.04.2025",
+            "days": 9
+          },
+          "halych": {
+            "ha": 6206,
+            "start": "15.04.2025",
+            "end": "22.04.2025",
+            "days": 7
+          },
+          "lviv": {
+            "ha": 4454,
+            "start": "15.04.2025",
+            "end": "26.04.2025",
+            "days": 11
+          },
+          "polissia": {
+            "ha": 3506,
+            "start": "10.04.2025",
+            "end": "23.04.2025",
+            "days": 13
+          }
+        }
+      }
+    }
+  },
+  "variance_analysis": {
+    "source": "Ukraine_Performance_report_2025_06.xlsx",
+    "ytd_june_2025_vs_budget": {
+      "revenue_variance_usd": 12977,
+      "revenue_variance_pct": 5.42,
+      "gross_profit_variance_usd": 48360,
+      "ebitda_variance_usd": 51774,
+      "ebitda_variance_pct": 1160.33,
+      "net_profit_variance_usd": 49937,
+      "net_profit_variance_pct": 195.47
+    },
+    "full_year_forecast_vs_budget": {
+      "revenue_variance_usd": 31572,
+      "revenue_variance_pct": 4.2,
+      "gross_profit_variance_usd": 12302,
+      "gross_profit_variance_pct": 11.87,
+      "ebitda_variance_usd": 8494,
+      "ebitda_variance_pct": 8.32,
+      "net_profit_variance_usd": 7946,
+      "net_profit_variance_pct": 20.96
+    },
+    "key_drivers": [
+      "Higher commodity prices (positive)",
+      "Front-loaded sales phasing (positive)",
+      "Consistent sales volumes (positive)",
+      "Lower direct costs -$16/ha (positive)",
+      "Favorable FX movements (positive)"
+    ]
+  },
+  "sensitivities": {
+    "yield_all_crops": {
+      "per_10pct_change_usd": 30000000
+    },
+    "wheat_price": {
+      "per_10pct_change_usd": 6700000,
+      "volume_tons": 268396
+    },
+    "osr_price": {
+      "per_10pct_change_usd": 5800000,
+      "volume_tons": 101565
+    },
+    "maize_price": {
+      "per_10pct_change_usd": 6500000,
+      "volume_tons": 273665
+    },
+    "soybean_price": {
+      "per_10pct_change_usd": 7700000,
+      "volume_tons": 161445
+    },
+    "sunflower_price": {
+      "per_10pct_change_usd": 2900000,
+      "volume_tons": 56059
+    },
+    "fx_usd_uah": {
+      "per_10pct_change": "8% of revenue"
+    }
+  },
+  "historical_performance": {
+    "source": "Ukraine_Performance_report_2025_06.xlsx - PL 2019-2025",
+    "net_income_usd_m": {
+      "2019": 5.1,
+      "2020": -37.1,
+      "2021": 124.1,
+      "2022": 36.6,
+      "2023": 11.6,
+      "2024": 113.2,
+      "2025_forecast": 45.9
+    },
+    "ebitda_usd_m": {
+      "2019": 17.6,
+      "2020": 91.0,
+      "2021": 183.7,
+      "2022": 94.0,
+      "2023": 68.2,
+      "2024": 174.6,
+      "2025_forecast": 110.6
+    }
+  },
+  "external_drivers": {
+    "source": "Data_Mapping.xlsx",
+    "fx_rates": {
+      "usd_uah_current": 42.05,
+      "usd_uah_forecast_q3_2026": 41.48,
+      "usd_sar": 3.75
+    },
+    "macro_indicators": {
+      "ukraine_gdp_growth_2025_pct": 2.0,
+      "ukraine_gdp_growth_2026_pct": 4.5,
+      "ukraine_cpi_2025_pct": 12.6,
+      "ukraine_cpi_2026_forecast_pct": 7.6,
+      "policy_interest_rate_pct": 15.5,
+      "unemployment_rate_pct": 11.5,
+      "population_million": 32.862
+    },
+    "commodity_prices_forecast": {
+      "wheat_futures_usd_bu_q4_2025": 526.99,
+      "corn_futures_usd_bu_q3_2026": 459.79,
+      "soybean_futures_usd_bu_q3_2026": 1160.79
+    }
+  },
+  "infrastructure": {
+    "source": "Data_Mapping.xlsx",
+    "land_cultivation_ha": 195000,
+    "cropped_ha": 180530,
+    "grain_elevators_tons": 603000,
+    "drying_storage_tons": 31000,
+    "potato_storage_tons": 106200,
+    "seed_production_capacity_tons_per_day": 420,
+    "seed_purity_pct": 99.8
+  },
+  "regions": [
+    "Bukovyna",
+    "Halych",
+    "Lviv",
+    "Polissya",
+    "Tsentr"
+  ],
+  "management_report_march_2025": {
+    "source": "CFG Ukraine Management Report March 2025",
+    "report_period": "March 2025",
+    "currency": "USD",
+    "executive_summary": {
+      "what_went_well": [
+        "Soil moisture improved due to recent rainfalls",
+        "Trading: 106 kt sold in March, 239 kt YTD",
+        "Total CFG sales 162 kt vs 159 kt budget",
+        "CTRM system implementation ongoing",
+        "250 grain hoppers operational",
+        "80 kt dispatched from elevators in March",
+        "VAT reimbursement received: USD 7.5M",
+        "EY audit of consolidated 2024 FS completed",
+        "SAP Fit-to-Standards sessions ongoing"
+      ],
+      "challenges": [
+        "Sharp frost negatively impacted winter crops",
+        "Mobilization rules changes",
+        "Inflation reached 15% in March",
+        "Risk of electricity and gas cuts due to air attacks",
+        "Increased market volatility due to US tariffs"
+      ],
+      "outlook_april_2025": [
+        "Explore origination market in Romania",
+        "Explore destination market in Egypt",
+        "Complete M&A due diligence",
+        "Complete equity increase for CFG Trading CH",
+        "Begin CTRM testing workshops"
+      ]
+    },
+    "ytd_march_2025_performance": {
+      "revenue_usd_m": 157.7,
+      "revenue_vs_budget_pct": -4,
+      "gross_profit_usd_m": 17.5,
+      "gross_profit_vs_budget_pct": 509,
+      "operating_profit_usd_m": 9.8,
+      "net_profit_usd_m": 3.0,
+      "net_profit_budget_usd_m": -11.9,
+      "ebitda_usd_m": 17.6,
+      "ebitda_above_budget_usd_m": 14.6,
+      "key_driver": "Higher sales prices and margins"
+    },
+    "fy2025_forecast_vs_budget": {
+      "revenue_forecast_usd_m": 735.1,
+      "revenue_variance_volume_usd_m": -29.3,
+      "revenue_variance_price_usd_m": 12.3,
+      "cost_of_sales_savings_usd_m": 30.8,
+      "net_profit_forecast_usd_m": 53.2,
+      "ebitda_forecast_usd_m": 114.8
+    },
+    "balance_sheet_march_2025": {
+      "total_assets_usd_m": 615.6,
+      "cash_equivalents_usd_m": 105.4,
+      "inventories_usd_m": 108.4,
+      "biological_assets_usd_m": 42.1,
+      "shareholders_equity_usd_m": 369.8,
+      "lease_liabilities_usd_m": 133.4,
+      "bank_loans_non_current_usd_m": 15.5,
+      "note": "Bank loan utilization lower than budgeted"
+    },
+    "revenue_drivers_fy2025": {
+      "total_revenue_change_usd_m": -17.0,
+      "positive_contributors": [
+        {
+          "crop": "Soybean",
+          "driver": "Higher quantity & prices"
+        },
+        {
+          "crop": "Sunflower",
+          "driver": "Higher prices"
+        },
+        {
+          "crop": "Winter OSR",
+          "driver": "Higher prices"
+        }
+      ],
+      "negative_contributors": [
+        {
+          "crop": "Maize",
+          "driver": "Lower volume & prices"
+        },
+        {
+          "crop": "Winter barley",
+          "driver": "Reduced volumes"
+        }
+      ]
+    },
+    "production_costs_harvest_2025": {
+      "total_variance_usd_m": -4.3,
+      "savings": {
+        "chemicals_usd_m": 2.1,
+        "fertilizers_usd_m": 1.0,
+        "fuel_usd_m": 1.7
+      },
+      "increases": {
+        "general_production_overheads_usd_m": 1.7
+      }
+    },
+    "area_changes_vs_budget": {
+      "total_change_ha": -2899,
+      "reduced": [
+        "Winter wheat",
+        "Winter barley",
+        "Winter OSR",
+        "Maize"
+      ],
+      "increased": {
+        "soybean_ha": 505,
+        "sunflower_ha": 598
+      }
+    },
+    "yield_changes": {
+      "general": "Mostly in line with budget",
+      "exceptions": {
+        "maize_t_ha": 0.1,
+        "processing_potatoes_t_ha": -0.1,
+        "table_potatoes_t_ha": -0.1
+      }
+    },
+    "gain_on_harvest_2025": {
+      "total_gain_usd_m": 94.7,
+      "variance_vs_budget_usd_m": 1.2,
+      "positive_contributors": {
+        "winter_wheat_usd_m": 2.2,
+        "winter_barley_usd_m": 1.0,
+        "processing_potatoes_usd_m": 0.6
+      },
+      "negative_contributors": [
+        "Winter OSR",
+        "Sunflower",
+        "Sugar beet"
+      ]
+    },
+    "expense_analysis_fy2025": {
+      "administrative_expenses_usd_m": 23.3,
+      "admin_variance": "No variance vs budget",
+      "distribution_expenses_variance_usd_m": 0.1,
+      "distribution_driver": "Warehouse & storage costs",
+      "other_income_expenses_variance_usd_m": -2.2,
+      "other_drivers": [
+        "FX losses (UAH devaluation)",
+        "PPE impairment",
+        "Asset disposal adjustments"
+      ],
+      "finance_costs_savings_usd_m": 2.5,
+      "finance_driver": "Lower credit utilization"
+    },
+    "trading_performance": {
+      "march_sales_kt": 106,
+      "ytd_sales_kt": 239,
+      "cfgt_sales_kt": 162,
+      "cfgt_budget_kt": 159,
+      "elevator_dispatch_march_kt": 80,
+      "grain_hoppers_operational": 250
+    },
+    "macro_context": {
+      "inflation_march_pct": 15,
+      "vat_reimbursement_usd_m": 7.5
+    }
+  },
+  "tech_cards_2026": {
+    "source": "Tech Cards 2026 (v1) - August 2025",
+    "planning_horizon": "2026-2030",
+    "scope": "Agronomy, crop structure, yields, costs, KPIs, financial assumptions",
+    "assumptions_and_risks": {
+      "key_risks": [
+        "Increase in phosphate and potash fertilizer prices",
+        "Natural gas unavailability during late harvest season",
+        "Rising gas prices",
+        "Crop structure change due to transition to permanent standard rotations (reduction in rapeseed area)",
+        "Nitrogen fertilizer deficit due to reduced Ostchem production, gas shortages, power supply issues",
+        "Higher fertilizer prices due to scarcity"
+      ],
+      "risk_impact": "Directly affects fertilizer availability, production costs, and crop mix decisions"
+    },
+    "financial_assumptions_2026": {
+      "fx_rate_uah_usd": 42.0,
+      "vat_rate_pct": 20,
+      "vat_recovery_rate": 1.2,
+      "fuel_vat_recovery_rate": 1.2,
+      "dollar_indexation_rate": 1.0,
+      "labor": {
+        "vacation_reserve_pct": 0,
+        "unified_social_contribution_pct": 22,
+        "salary_growth_rate_pct": 10
+      },
+      "cost_structure": {
+        "overhead_costs_per_ha": "Based on 2025 budget",
+        "direct_costs": {
+          "seeds_fertilizers_crop_protection": "Market-updated prices",
+          "fuel": "2025 budget reference",
+          "services": "Budget_2026 tab",
+          "transportation_elevator": "Per ton, based on 2025 budget"
+        },
+        "net_sales_prices": "Based on 2025 budget"
+      }
+    },
+    "crop_rotation_principles": {
+      "disease_pressure_control": {
+        "sclerotinia_peronospora": "\u22651-year break between sunflower, OSR, soybean",
+        "osr_sunflower_frequency": "Max once in 4-5 years",
+        "restriction": "Soybean & sunflower not allowed together in rotation"
+      },
+      "pathogen_rules": [
+        "Clubroot (OSR)",
+        "Dwarf smut (winter wheat)",
+        "Diabrotica (corn)"
+      ],
+      "soil_preferences": "Winter barley preferred in dry/sandy/alkaline soils",
+      "operations_optimization": {
+        "crops_per_rotation": "3-5",
+        "consolidation": "Large plots",
+        "winter_spring_target": "50/50 split",
+        "corn_location": "Near elevators (except Novosilki, Chukva, Shumsk)",
+        "stable_rotations": [
+          "Potato",
+          "Sugar beet"
+        ]
+      }
+    },
+    "crop_structure_2026_2030": {
+      "total_planned_area_ha": 179130,
+      "main_rotation": {
+        "area_ha": 155212,
+        "share_pct": 87,
+        "crops": [
+          "Winter OSR",
+          "Winter wheat",
+          "Winter barley",
+          "Sunflower",
+          "Corn",
+          "Soybean"
+        ]
+      },
+      "sugar_beet_rotation_ha": 11192,
+      "potato_rotation_ha": 10132,
+      "transitional_rotations_ha": 2594,
+      "strategic_trends": {
+        "increase": [
+          "Soybean",
+          "Sunflower",
+          "Corn"
+        ],
+        "reduction": [
+          "Winter wheat",
+          "Winter barley",
+          "OSR (controlled)"
+        ],
+        "target_winter_spring_split": "50/50",
+        "rationale": [
+          "Higher margin crops",
+          "Risk diversification",
+          "Disease-safe rotations"
+        ]
+      }
+    },
+    "yield_assumptions": {
+      "general_logic": "Budget yields aligned with historical averages",
+      "improvements_expected": [
+        "Corn",
+        "Soybean"
+      ],
+      "conservative_planning": [
+        "OSR",
+        "Sunflower (due to disease risk)"
+      ],
+      "potato_tracking": {
+        "categories": [
+          "Seed potatoes",
+          "Processing potatoes",
+          "Table potatoes"
+        ],
+        "note": "Processing potatoes show highest yield volatility",
+        "budget_basis": "Multi-year averages, not peak years"
+      }
+    },
+    "agronomic_optimization_2026": {
+      "fertilizer_application": "Based on agrochemical soil surveys (78% coverage)",
+      "uan_production": "Increased share of self-produced UAN",
+      "fungicide_strategy": "Shift to single-component fungicides (e.g., prothioconazole)",
+      "cost_reduction_measures": [
+        "Reduced use of Caramba Turbo",
+        "Use of generic Aclonifen",
+        "Lower share of original fungicides in potatoes"
+      ],
+      "soil_meliorants": "Based on soil analysis",
+      "green_manure_selection": {
+        "after_osr": [
+          "Sudan grass",
+          "Flax",
+          "Phacelia"
+        ],
+        "after_cereals": [
+          "Sudan grass",
+          "Flax",
+          "Phacelia",
+          "Vetch"
+        ]
+      }
+    },
+    "kpi_framework_2026_vs_2025": {
+      "direct_costs_change_per_ha_usd": 30,
+      "cost_increases": {
+        "fertilizers_usd": 31,
+        "fuel_usd": 2,
+        "seeds_usd": 5,
+        "transport_usd": 2,
+        "processing_usd": 4
+      },
+      "cost_savings": {
+        "plant_protection_usd": -14
+      },
+      "ebitda_per_ha_2026_usd": 294,
+      "ebitda_change_vs_2025_usd": -25,
+      "note": "Yield stability offsets cost inflation"
+    },
+    "crop_kpi_structure": {
+      "metrics_per_crop": [
+        "Area (ha)",
+        "Yield (t/ha)",
+        "Net sales price ($/t)",
+        "Direct costs ($/ha)",
+        "Production cost",
+        "Gross margin",
+        "EBITDA",
+        "Cost profitability (%)",
+        "Income profitability (%)",
+        "Input intensity (N, P, K, fuel, seeds)"
+      ],
+      "crops_covered": [
+        "Winter wheat",
+        "Winter OSR",
+        "Winter barley",
+        "Corn",
+        "Sunflower",
+        "Soybean",
+        "Sugar beet",
+        "Potatoes (seed, processing, table)"
+      ],
+      "use_case": "Per-crop profitability reasoning and scenario comparisons"
+    }
+  },
+  "power_bi_ceo_report": {
+    "source": "Ukraine Power BI CEO Report",
+    "report_type": "Dashboard-based (Finance, Sales, Operations, Land, Procurement, Risk)",
+    "reporting_period": "YTD 2025 (June/July focus)",
+    "pages": 20,
+    "business_update": {
+      "what_went_well": {
+        "farming": [
+          "Winter barley harvesting started",
+          "Expected yields slightly higher than budget",
+          "Yield improvement: ~6.2 vs 6.1 t/ha (barley)",
+          "6+6 forecast improved by ~USD 5M (yield & price updates)"
+        ],
+        "trading": {
+          "ukraine_origination_june_kt": 47,
+          "ukraine_origination_ytd_kt": 425.5,
+          "total_cfgt_sales_june_kt": 106,
+          "total_cfgt_sales_ytd_kt": 855,
+          "total_cfgt_sales_budget_kt": 832
+        },
+        "infrastructure": {
+          "elevator_dispatch_june_kt": 79
+        },
+        "other": [
+          "VAT reimbursement received: USD 4.7M",
+          "SAP Fit-to-Standard sessions completed"
+        ]
+      },
+      "challenges": [
+        "Increased missile & drone attacks, including Black Sea ports",
+        "Inflation higher than forecasted: ~14% in June"
+      ],
+      "outlook_july_2025": [
+        "Complete first wave of harvest",
+        "Start seeding for 2026 crops",
+        "Establish legal entity in Romania"
+      ]
+    },
+    "financial_summary_ytd": {
+      "revenue": "Below budget but improving trend",
+      "cogs": "Better than budget due to cost control",
+      "ebitda": "Strong positive variance vs budget",
+      "net_profit": "Outperforming budget",
+      "key_drivers": [
+        "Higher sales prices",
+        "Better margins",
+        "Controlled operating expenses",
+        "FX and finance cost management"
+      ]
+    },
+    "ebitda_analysis": {
+      "positive_drivers": [
+        "Gross profit uplift",
+        "Controlled admin expenses",
+        "Logistics optimization"
+      ],
+      "negative_impacts": [
+        "FX movements",
+        "Selected cost overruns"
+      ],
+      "trend": "Consistent improvement January \u2192 June, margin steadily increasing"
+    },
+    "cash_flow": {
+      "operating": "Strong inflows from trading, inventory turnover aligned with budget",
+      "investing": "Machinery & facilities investments, timing-related deviations",
+      "financing": "Debt servicing ongoing, no stress indicators",
+      "position": "Closing cash balance positive, sufficient liquidity"
+    },
+    "balance_sheet_ratios": {
+      "current_ratio": 3.8,
+      "quick_ratio": 0.54,
+      "debt_to_equity": 0.47,
+      "net_debt_ebitda": "Low risk",
+      "notes": [
+        "Strong cash position",
+        "Inventories aligned with seasonal cycle",
+        "Biological assets recorded",
+        "Lease liabilities significant (machinery & land)",
+        "Bank debt controlled"
+      ]
+    },
+    "macroeconomics_ukraine": {
+      "inflation": {
+        "peak_pct": 15,
+        "june_pct": 14,
+        "outlook": "Gradual moderation expected",
+        "drivers": [
+          "Energy prices",
+          "Food prices",
+          "Administrative inflation"
+        ]
+      },
+      "currency": {
+        "regime": "Managed exchange rate",
+        "trend": "Gradual devaluation vs USD",
+        "controls": "FX controls still in place"
+      },
+      "gdp": {
+        "status": "Growth resumed",
+        "agriculture_role": "Key contributor",
+        "risk": "Export corridor constraints"
+      }
+    },
+    "forward_selling": {
+      "total_contracted_kt": 203,
+      "crops": [
+        "Wheat",
+        "Corn",
+        "Soybean",
+        "Sunflower",
+        "OSR"
+      ],
+      "sales_mix": "Domestic & export balance",
+      "remaining": "Available for spot market"
+    },
+    "harvest_2025": {
+      "total_area_ha": 183500,
+      "total_production_forecast_tons": 1300000,
+      "crop_status": {
+        "winter_wheat_barley": "Stable",
+        "corn_sunflower": "In line with expectations",
+        "soybean": "Showing upside potential"
+      }
+    },
+    "agricultural_operations": {
+      "seeding_ha": 100330,
+      "fertilization_ha": 250978,
+      "tillage_ha": 143476,
+      "harvest_ha": 17423,
+      "agrochemical_operations_ha": 1200000,
+      "status": "Majority on track, no major delays"
+    },
+    "machinery_repairs": {
+      "planned_repairs": 1065,
+      "completed_repairs": 1117,
+      "completion_rate_pct": 105,
+      "fleet_status": "Tractors, harvesters, seeders above plan, high operational availability"
+    },
+    "land_bank": {
+      "total_land_bank_ha": 188354,
+      "farmed_area_ha": 180844,
+      "number_of_landowners": 89973,
+      "average_rent_usd_ha": 146,
+      "average_lease_duration_years": 10.6,
+      "lease_prolongation_success_rate_pct": 53
+    }
+  }
+}

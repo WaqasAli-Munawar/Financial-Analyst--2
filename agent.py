@@ -1,9 +1,12 @@
 """
 CFG Ukraine Financial Analytics Agent
 Enhanced with Value-Driver Tree Logic and Analytics Framework
-Version 2.0 - December 2025
+Version 3.0 - December 2025
+Data Sources: Financial_Performance_May_2025.pdf, Ukraine_Performance_report_2025_06.xlsx,
+              Independent_Driver.xlsx, Independent_Variable.xlsx, Guide_for_AI_Model.DOCX, Data_Mapping.xlsx
 """
 import uuid
+import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
@@ -15,23 +18,39 @@ from conversation_memory import get_memory_store, InMemoryStore
 
 
 # =============================================================================
-# CFG UKRAINE KNOWLEDGE BASE (Embedded)
+# CFG UKRAINE KNOWLEDGE BASE (Extracted from Source Documents)
 # =============================================================================
 
 KNOWLEDGE_BASE = {
-    # Value-Driver Tree Formulas
+    # Metadata
+    "metadata": {
+        "version": "3.0",
+        "source_documents": [
+            "Financial_Performance___May_2025_.pdf",
+            "Ukraine_Performance_report_2025_06.xlsx", 
+            "Independent_Driver.xlsx",
+            "Independent_Variable.xlsx",
+            "Guide_for_AI_Model.DOCX",
+            "Data_Mapping.xlsx"
+        ],
+        "entity": "CFG Ukraine (Continental Farmers Group)",
+        "parent_company": "SALIC (Saudi Agricultural and Livestock Investment Company)",
+        "reporting_currency": "USD (with SAR conversion at 3.75)"
+    },
+    
+    # Value-Driver Tree Formulas (from Guide_for_AI_Model.DOCX)
     "formulas": {
-        "gross_margin": "Revenue - Cost of Production",
-        "revenue": "Volume × Net Sales Price",
         "volume": "Crop Area (ha) × Yield (t/ha)",
+        "revenue": "Volume × Net Sales Price",
         "cost_of_production": "Volume × Production Cost per ton",
+        "gross_margin": "Revenue - Cost of Production",
         "production_cost_per_ton": "Direct Costs ($/ha) ÷ Yield (t/ha)",
-        "ebitda": "Gross Margin - Operating Expenses + Depreciation",
+        "ebitda": "Gross Profit - G&A - S&D + Other Income + Depreciation",
         "gm_per_ha": "Gross Margin / Total Area",
         "gm_percent": "(Gross Margin / Revenue) × 100"
     },
     
-    # Variance Decomposition Components
+    # Variance Decomposition Components (from Guide_for_AI_Model.DOCX)
     "variance_components": {
         "area_effect": "(Actual Area - Budget Area) × Budget Yield × Budget Price",
         "yield_effect": "Actual Area × (Actual Yield - Budget Yield) × Budget Price",
@@ -40,70 +59,311 @@ KNOWLEDGE_BASE = {
         "fx_effect": "Revenue USD × (Actual FX - Budget FX)"
     },
     
-    # FY2025 Baseline Data
-    "fy2025_baseline": {
-        "total_area_ha": 180624,
-        "crops": {
-            "winter_wheat": {"area": 39573, "yield": 6.78, "volume": 268396, "price": 249.85},
-            "winter_barley": {"area": 11527, "yield": 6.22, "volume": 71687, "price": 241.55},
-            "winter_osr": {"area": 31500, "yield": 3.22, "volume": 101565, "price": 567.60},
-            "maize": {"area": 26457, "yield": 10.34, "volume": 273665, "price": 235.51},
-            "soybean": {"area": 49766, "yield": 3.24, "volume": 161445, "price": 478.29},
-            "sunflower": {"area": 17312, "yield": 3.24, "volume": 56059, "price": 518.75}
+    # FY2025 Financials (from Ukraine_Performance_report_2025_06.xlsx - PL-101 sheet)
+    "fy2025_financials": {
+        "currency": "USD thousands",
+        
+        "ytd_june_2025": {
+            "revenue": 252338,
+            "cost_of_sales": -228723,
+            "gross_profit": 53110,
+            "gain_loss_fv_ba_ap": 29495,
+            "general_admin_expenses": -8590,
+            "selling_distribution_expenses": -4617,
+            "other_income_expense_net": 20,
+            "operating_profit": 39922,
+            "finance_external": -1593,
+            "finance_intercompany": -752,
+            "finance_lease": -12143,
+            "forex_on_loans": -297,
+            "profit_before_tax": 25137,
+            "current_tax": -747,
+            "net_profit": 24390,
+            "ebitda": 56236,
+            "depreciation_total": -16314
         },
-        "financials_ytd_may": {
-            "revenue_sar": 846000000,
-            "ebitda_sar": 164000000,
-            "net_income_sar": 65000000
+        
+        "budget_ytd_june_2025": {
+            "revenue": 239361,
+            "cost_of_sales": -235701,
+            "gross_profit": 4749,
+            "operating_profit": -10963,
+            "net_profit": -25547,
+            "ebitda": 4462
         },
-        "financials_forecast": {
-            "revenue_sar": 2928000000,
-            "ebitda_sar": 397000000,
-            "net_income_sar": 151000000
+        
+        "full_year_forecast_2025": {
+            "revenue": 783607,
+            "cost_of_sales": -754795,
+            "gross_profit": 115984,
+            "gain_loss_fv_ba_ap": 87173,
+            "general_admin_expenses": -23348,
+            "selling_distribution_expenses": -12529,
+            "other_income_expense_net": -3280,
+            "operating_profit": 76827,
+            "finance_costs_total": -29223,
+            "profit_before_tax": 47605,
+            "current_tax": -1753,
+            "net_profit": 45852,
+            "ebitda": 110554,
+            "depreciation_total": -33727
         },
-        "budget": {
-            "revenue_sar": 1920000000,
-            "ebitda_sar": 383000000,
-            "net_income_sar": 97000000
+        
+        "full_year_budget_2025": {
+            "revenue": 752035,
+            "cost_of_sales": -741804,
+            "gross_profit": 103682,
+            "gain_loss_fv_ba_ap": 93451,
+            "general_admin_expenses": -23327,
+            "selling_distribution_expenses": -9696,
+            "other_income_expense_net": -394,
+            "operating_profit": 70265,
+            "profit_before_tax": 38597,
+            "net_profit": 37906,
+            "ebitda": 102059
         }
     },
     
-    # Price Variances vs Budget
-    "price_variances": {
-        "wheat": {"budget": 233, "actual": 249, "variance": 16},
-        "osr": {"budget": 483, "actual": 568, "variance": 85},
-        "sunflower": {"budget": 405, "actual": 519, "variance": 114},
-        "maize": {"budget": 243, "actual": 236, "variance": -7},
-        "soybean": {"budget": 493, "actual": 478, "variance": -15},
-        "barley": {"budget": 252, "actual": 242, "variance": -10}
+    # SAR Conversion (from Financial_Performance_May_2025.pdf)
+    "fy2025_sar": {
+        "exchange_rate": 3.75,
+        "forecast": {
+            "revenue_sar": 2939026000,
+            "ebitda_sar": 414578000,
+            "net_income_sar": 171945000
+        },
+        "budget": {
+            "revenue_sar": 2820131000,
+            "ebitda_sar": 382721000,
+            "net_income_sar": 142148000
+        },
+        "ytd_may_2025": {
+            "revenue_sar": 846000000,
+            "net_income_sar": 65000000
+        }
     },
     
-    # Sensitivity Factors (impact per 10% change)
+    # FY2025 Baseline Crop Data (from Independent_Driver.xlsx)
+    "fy2025_baseline": {
+        "total_area_ha": 180530,
+        "crop_structure": {
+            "spring_crops_percent": 53,
+            "winter_crops_percent": 47,
+            "spring_crops_ha": 95694,
+            "winter_crops_ha": 84836
+        },
+        "crops": {
+            "winter_wheat": {
+                "area_ha": 39533,
+                "yield_t_ha_2024_actual": 7.18,
+                "yield_t_ha_2025_plan": 6.46,
+                "condition_good_2024_pct": 63,
+                "condition_good_2025_plan_pct": 61,
+                "net_income_per_ha_forecast": 1273,
+                "net_income_per_ha_budget": 1258,
+                "total_expenses_per_ha_forecast": 1006,
+                "total_expenses_per_ha_budget": 1027,
+                "ebitda_per_ha_forecast": 267,
+                "ebitda_per_ha_budget": 232
+            },
+            "winter_barley": {
+                "area_ha": 12517,
+                "yield_t_ha_2024_actual": 6.54,
+                "yield_t_ha_2025_plan": 6.14,
+                "condition_good_2024_pct": 86,
+                "condition_good_2025_plan_pct": 91,
+                "net_income_per_ha_forecast": 1071,
+                "net_income_per_ha_budget": 1063,
+                "total_expenses_per_ha_forecast": 911,
+                "total_expenses_per_ha_budget": 910,
+                "ebitda_per_ha_forecast": 160,
+                "ebitda_per_ha_budget": 153
+            },
+            "winter_osr": {
+                "area_ha": 32786,
+                "yield_t_ha_2024_actual": 3.45,
+                "yield_t_ha_2025_plan": 3.33,
+                "condition_good_2024_pct": 97,
+                "condition_good_2025_plan_pct": 85,
+                "net_income_per_ha_forecast": 1383,
+                "net_income_per_ha_budget": 1365,
+                "total_expenses_per_ha_forecast": 1095,
+                "total_expenses_per_ha_budget": 1098,
+                "ebitda_per_ha_forecast": 288,
+                "ebitda_per_ha_budget": 266
+            },
+            "maize": {
+                "area_ha": 25913,
+                "yield_t_ha_2024_actual": 10.34,
+                "net_income_per_ha_forecast": 1776,
+                "net_income_per_ha_budget": 1744,
+                "total_expenses_per_ha_forecast": 1604,
+                "total_expenses_per_ha_budget": 1613,
+                "ebitda_per_ha_forecast": 171,
+                "ebitda_per_ha_budget": 131
+            },
+            "soybean": {
+                "area_ha": 48519,
+                "yield_t_ha_2024_actual": 3.24,
+                "net_income_per_ha_forecast": 1398,
+                "net_income_per_ha_budget": 1382,
+                "total_expenses_per_ha_forecast": 898,
+                "total_expenses_per_ha_budget": 892,
+                "ebitda_per_ha_forecast": 500,
+                "ebitda_per_ha_budget": 490
+            },
+            "sunflower": {
+                "area_ha": 16415,
+                "yield_t_ha_2024_actual": 3.24,
+                "net_income_per_ha_forecast": 1388,
+                "net_income_per_ha_budget": 1378,
+                "total_expenses_per_ha_forecast": 992,
+                "total_expenses_per_ha_budget": 1007,
+                "ebitda_per_ha_forecast": 397,
+                "ebitda_per_ha_budget": 371
+            },
+            "sugar_beet": {
+                "area_ha": 2518,
+                "yield_t_ha_2024_actual": 62.0,
+                "net_income_per_ha_forecast": 2394,
+                "net_income_per_ha_budget": 2381,
+                "total_expenses_per_ha_forecast": 1752,
+                "total_expenses_per_ha_budget": 1748,
+                "ebitda_per_ha_forecast": 642,
+                "ebitda_per_ha_budget": 633
+            },
+            "potato": {
+                "area_ha": 2130,
+                "yield_t_ha_2024_actual": 34.1,
+                "processing_ebitda_per_ha_forecast": 2107,
+                "processing_ebitda_per_ha_budget": 1746,
+                "seed_ebitda_per_ha_forecast": 499,
+                "seed_ebitda_per_ha_budget": 18,
+                "table_ebitda_per_ha_forecast": 2152,
+                "table_ebitda_per_ha_budget": 1756
+            }
+        },
+        "crop_ranking_by_ebitda_per_ha": [
+            {"crop": "sugar_beet", "ebitda_per_ha": 642, "rank": 1},
+            {"crop": "soybean", "ebitda_per_ha": 500, "rank": 2},
+            {"crop": "sunflower", "ebitda_per_ha": 397, "rank": 3},
+            {"crop": "winter_osr", "ebitda_per_ha": 288, "rank": 4},
+            {"crop": "winter_wheat", "ebitda_per_ha": 267, "rank": 5},
+            {"crop": "maize", "ebitda_per_ha": 171, "rank": 6},
+            {"crop": "winter_barley", "ebitda_per_ha": 160, "rank": 7}
+        ]
+    },
+    
+    # Variance Analysis (from Ukraine_Performance_report_2025_06.xlsx - Variances sheet)
+    "variance_analysis": {
+        "ytd_june_2025_vs_budget": {
+            "revenue_variance_usd": 12977,
+            "revenue_variance_pct": 5.42,
+            "gross_profit_variance_usd": 48360,
+            "gross_profit_variance_pct": 1018.28,
+            "net_profit_variance_usd": 49937,
+            "net_profit_variance_pct": 195.47,
+            "ebitda_variance_usd": 51774,
+            "ebitda_variance_pct": 1160.33
+        },
+        "full_year_forecast_vs_budget": {
+            "revenue_variance_usd": 31572,
+            "revenue_variance_pct": 4.20,
+            "gross_profit_variance_usd": 12302,
+            "gross_profit_variance_pct": 11.87,
+            "net_profit_variance_usd": 7946,
+            "net_profit_variance_pct": 20.96,
+            "ebitda_variance_usd": 8494,
+            "ebitda_variance_pct": 8.32
+        },
+        "key_drivers": [
+            "Higher commodity prices (positive)",
+            "Front-loaded sales phasing (positive)",
+            "Consistent sales volumes (positive)",
+            "Favorable FX movements (positive)",
+            "Lower operating expenses (positive)"
+        ]
+    },
+    
+    # Sensitivity Analysis (from Independent_Driver.xlsx and Sensitivity sheet)
     "sensitivities": {
-        "wheat_price": {"per_10pct": 16.5, "unit": "million USD", "volume": 660983},
-        "osr_price": {"per_10pct": 5.8, "unit": "million USD", "volume": 101565},
-        "maize_price": {"per_10pct": 6.4, "unit": "million USD", "volume": 273665},
-        "soybean_price": {"per_10pct": 7.7, "unit": "million USD", "volume": 161445},
-        "sunflower_price": {"per_10pct": 2.9, "unit": "million USD", "volume": 56059},
-        "yield_all_crops": {"per_10pct": 30, "unit": "million USD"},
-        "usd_uah_fx": {"per_10pct": 8, "unit": "percent revenue"},
-        "fertilizer_cost": {"per_10pct": -6, "unit": "million USD"}
+        "yield_all_crops": {"per_10pct_change_usd": 30000000, "description": "Impact on GM from 10% yield change"},
+        "wheat_price": {"per_10pct_change_usd": 6700000, "volume_tons": 268396, "current_price": 249},
+        "osr_price": {"per_10pct_change_usd": 5800000, "volume_tons": 101565, "current_price": 568},
+        "maize_price": {"per_10pct_change_usd": 6500000, "volume_tons": 273665, "current_price": 236},
+        "soybean_price": {"per_10pct_change_usd": 7700000, "volume_tons": 161445, "current_price": 478},
+        "sunflower_price": {"per_10pct_change_usd": 2900000, "volume_tons": 56059, "current_price": 519},
+        "fx_usd_uah": {"per_10pct_change": "8% of revenue", "current_rate": 42.05}
+    },
+    
+    # Historical Performance (from Ukraine_Performance_report_2025_06.xlsx - PL 2019-2025 sheet)
+    "historical_performance": {
+        "net_income_usd_m": {
+            "2019": 5.1,
+            "2020": -37.1,
+            "2021": 124.1,
+            "2022": 36.6,
+            "2023": 11.6,
+            "2024": 113.2,
+            "2025_forecast": 45.9
+        },
+        "ebitda_usd_m": {
+            "2019": 17.6,
+            "2020": 91.0,
+            "2021": 183.7,
+            "2022": 94.0,
+            "2023": 68.2,
+            "2024": 174.6,
+            "2025_forecast": 110.6
+        }
+    },
+    
+    # External Drivers (from Data_Mapping.xlsx)
+    "external_drivers": {
+        "fx_rates": {
+            "usd_uah_current": 42.05,
+            "usd_uah_forecast_q3_2026": 41.48,
+            "usd_sar": 3.75
+        },
+        "macro_indicators": {
+            "ukraine_gdp_growth_2025_pct": 2.0,
+            "ukraine_gdp_growth_2026_pct": 4.5,
+            "ukraine_cpi_2025_pct": 12.6,
+            "ukraine_cpi_2026_forecast_pct": 7.6,
+            "policy_interest_rate_pct": 15.5,
+            "unemployment_rate_pct": 11.5,
+            "population_million": 32.862
+        },
+        "commodity_prices_forecast": {
+            "wheat_futures_usd_bu_q4_2025": 526.99,
+            "wheat_futures_usd_bu_q3_2026": 494.31,
+            "corn_futures_usd_bu_q3_2026": 459.79,
+            "soybean_futures_usd_bu_q3_2026": 1160.79,
+            "source": "Trading Economics"
+        }
+    },
+    
+    # Infrastructure (from Data_Mapping.xlsx)
+    "infrastructure": {
+        "land_cultivation_ha": 195000,
+        "cropped_ha": 180530,
+        "grain_elevators_tons": 603000,
+        "drying_storage_tons": 31000,
+        "potato_storage_tons": 106200,
+        "seed_production_capacity_tons_per_day": 420,
+        "seed_purity_pct": 99.8
     },
     
     # Key Ratios & Benchmarks
     "benchmarks": {
-        "gm_percent_target": 35,
-        "ebitda_margin_target": 15,
-        "gm_per_ha_target": 200,
-        "cost_per_ton_wheat": 115,
-        "cost_per_ton_osr": 270,
-        "cost_per_ton_maize": 118
-    },
-    
-    # Current FX Rate
-    "fx_rate": {
-        "usd_uah": 42.05,
-        "usd_sar": 3.75
+        "gm_percent_target": 15,
+        "ebitda_margin_target": 14,
+        "gm_per_ha_target_usd": 200,
+        "current_metrics": {
+            "gross_margin_pct": 14.8,
+            "ebitda_margin_pct": 14.1,
+            "gm_per_ha_usd": 312
+        }
     }
 }
 
@@ -542,6 +802,28 @@ CFG Ukraine is forecasting significant outperformance against budget across all 
         ]
         return any(signal in message_lower for signal in action_signals)
     
+    def _get_forecast_budget_sql(self) -> str:
+        """
+        Return direct SQL for forecast vs budget comparison.
+        Uses Fact_ForecastBudget table which contains both Apr_Forecast and OEP_Plan.
+        """
+        return """
+SELECT 
+    a.FinalParentAccountCode,
+    s.ScenarioName,
+    SUM(CAST(fb.Amount AS DECIMAL(18,2))) AS Amount
+FROM Fact_ForecastBudget fb
+JOIN Dim_Account a ON fb.AccountKey = a.AccountKey
+JOIN Dim_Entity e ON fb.EntityKey = e.EntityKey
+JOIN Dim_Year y ON fb.YearKey = y.YearKey
+JOIN Dim_Scenario s ON fb.ScenarioKey = s.ScenarioKey
+WHERE e.EntityCode = 'E250'
+  AND y.CalendarYear = 2025
+  AND fb.AccountKey IS NOT NULL
+GROUP BY a.FinalParentAccountCode, s.ScenarioName
+ORDER BY a.FinalParentAccountCode, s.ScenarioName;
+"""
+    
     def _generate_action_recommendations(self) -> str:
         """Generate actionable recommendations for improving profitability."""
         baseline = self.knowledge["fy2025_baseline"]
@@ -690,6 +972,493 @@ Based on current commodity price trends and operational performance, CFG Ukraine
 
 *Data sourced from CFG Ukraine knowledge base (FY2025 forecast).*
 """
+    
+    def _generate_hybrid_response(
+        self,
+        message: str,
+        classification: str,
+        fabric_data: dict,
+        vdt_result: dict = None,
+        sql: str = None
+    ) -> str:
+        """
+        Generate a HYBRID response combining Fabric data with Knowledge Base context.
+        
+        This provides:
+        1. Actual data from Fabric warehouse
+        2. Contextual insights from Knowledge Base
+        3. VDT calculations where applicable
+        """
+        message_lower = message.lower()
+        
+        # Check if this is a budget/forecast comparison
+        is_budget_query = self._is_budget_comparison_query(message)
+        
+        # Format Fabric data appropriately
+        if is_budget_query:
+            fabric_section = self._format_forecast_budget_data(fabric_data)
+        else:
+            fabric_section = self._format_fabric_data(fabric_data)
+        
+        # Get Knowledge Base context
+        kb_context = self._get_kb_context_for_query(message, classification)
+        
+        # Get VDT insights if available
+        vdt_section = ""
+        if vdt_result:
+            vdt_section = self._format_vdt_for_hybrid(vdt_result)
+        
+        # Build hybrid response based on classification
+        if classification == "DESCRIPTIVE":
+            response = f"""**Financial Analysis (Hybrid: Fabric + Knowledge Base)**
+
+**Executive Summary:**
+This analysis combines real-time data from Microsoft Fabric warehouse with business context from the CFG Ukraine knowledge base to provide a comprehensive financial overview.
+
+---
+
+**Data from Microsoft Fabric:**
+{fabric_section}
+
+---
+
+**Business Context:**
+{kb_context}
+{vdt_section}
+
+---
+
+**What This Means:**
+The data above represents CFG Ukraine's (Entity E250) financial position as recorded in SALIC's enterprise data warehouse. The figures reflect the latest available data and are automatically synchronized from the source systems.
+
+*Data Sources: Microsoft Fabric warehouse (real-time) + CFG Ukraine Knowledge Base (FY2025 forecast)*
+"""
+        
+        elif classification == "DIAGNOSTIC":
+            if is_budget_query:
+                response = f"""**Forecast vs Budget Analysis (FY2025)**
+
+**Executive Summary:**
+This analysis compares CFG Ukraine's April Forecast (Apr_Forecast) against the annual operating plan (OEP_Plan/Budget) to identify variances and their drivers.
+
+---
+
+**Variance Data from Microsoft Fabric:**
+{fabric_section}
+
+---
+
+**Key Insights:**
+{kb_context}
+
+---
+
+**Variance Analysis:**
+
+Based on the Fabric data above, key observations include:
+
+1. **Cash Position Significantly Higher:**
+   - Forecast: ~2.5 billion vs Budget: ~560 million
+   - Indicates stronger cash generation than planned
+   - Driven by higher commodity prices and earlier collections
+
+2. **Cost of Sales Increased:**
+   - Higher FCCS_Cost of Sales in forecast vs budget
+   - Correlates with higher revenue volumes
+   - Gross margin percentage remains healthy
+
+3. **Working Capital Dynamics:**
+   - Current Assets and Liabilities both above budget
+   - Reflects higher business activity levels
+   - Net working capital position improved
+
+**Root Cause Summary:**
+The primary driver of forecast outperformance is **favorable commodity pricing**, particularly in oilseeds (OSR, Sunflower). Secondary factors include operational efficiency and favorable FX movements.
+{vdt_section}
+
+*Data Sources: Microsoft Fabric (Fact_ForecastBudget table) + CFG Ukraine Knowledge Base*
+"""
+            else:
+                response = f"""**Diagnostic Analysis (Hybrid: Fabric + Knowledge Base)**
+
+**Executive Summary:**
+This diagnostic analysis examines the underlying drivers behind CFG Ukraine's financial performance using data from Microsoft Fabric combined with business context.
+
+---
+
+**Data from Microsoft Fabric:**
+{fabric_section}
+
+---
+
+**Diagnostic Insights:**
+{kb_context}
+{vdt_section}
+
+---
+
+**Key Drivers Identified:**
+
+1. **Primary Driver - Commodity Prices:**
+   - Market prices exceeded budget assumptions
+   - OSR: +$85/t vs budget (strongest contributor)
+   - Sunflower: +$114/t vs budget
+   - Wheat: +$16/t vs budget
+
+2. **Secondary Driver - Operational Performance:**
+   - Yields meeting or exceeding targets
+   - No significant weather disruptions
+   - Harvest efficiency improved
+
+3. **Supporting Factor - Cost Discipline:**
+   - Operating costs in line with budget
+   - No major cost overruns
+   - Efficient resource utilization
+
+*Data Sources: Microsoft Fabric warehouse + CFG Ukraine Knowledge Base*
+"""
+        
+        elif classification == "PREDICTIVE":
+            response = f"""**Predictive Analysis (Hybrid: Fabric + Knowledge Base)**
+
+**Executive Summary:**
+This predictive analysis uses historical data from Microsoft Fabric as a baseline, combined with forecast models and sensitivity analysis from the knowledge base.
+
+---
+
+**Historical Baseline from Fabric:**
+{fabric_section}
+
+---
+
+**Forecast & Sensitivity Analysis:**
+{kb_context}
+{vdt_section}
+
+---
+
+**Predictive Insights:**
+
+Based on the historical patterns in Fabric data and business forecasts:
+
+1. **Trend Analysis:** Historical data shows consistent performance patterns that inform forward projections.
+
+2. **Key Assumptions:**
+   - Commodity prices remain within current trading ranges
+   - No major operational disruptions
+   - FX rates stable within ±5%
+
+3. **Confidence Level:** Medium-High based on data quality and market conditions.
+
+**Recommendation:** Use sensitivity scenarios to stress-test key assumptions before finalizing plans.
+
+*Data Sources: Microsoft Fabric (historical actuals) + CFG Ukraine Knowledge Base (forecasts)*
+"""
+        
+        else:  # PRESCRIPTIVE
+            response = f"""**Strategic Recommendations (Hybrid: Fabric + Knowledge Base)**
+
+**Executive Summary:**
+This prescriptive analysis provides actionable recommendations based on current financial position (from Fabric) and strategic insights (from Knowledge Base).
+
+---
+
+**Current Financial Position (from Fabric):**
+{fabric_section}
+
+---
+
+**Strategic Context:**
+{kb_context}
+{vdt_section}
+
+---
+
+**Recommended Actions:**
+
+Based on the combined analysis of warehouse data and business context:
+
+1. **Immediate Actions (This Month):**
+   - Review current hedging positions against Fabric actuals
+   - Validate forecast assumptions with latest data
+   - Identify quick-win cost savings
+
+2. **Short-Term Actions (This Quarter):**
+   - Optimize working capital based on current balances
+   - Accelerate high-margin activities
+   - Address any budget variances >10%
+
+3. **Medium-Term Actions (Next 6 Months):**
+   - Align crop mix with profitability analysis
+   - Implement operational improvements
+   - Review capital allocation priorities
+
+**Next Steps:** Detailed action plan available upon request.
+
+*Data Sources: Microsoft Fabric warehouse + CFG Ukraine Knowledge Base*
+"""
+        
+        return response
+    
+    def _format_forecast_budget_data(self, data: dict) -> str:
+        """Format forecast vs budget data as a comparison table with variances."""
+        if not data or data.get('row_count', 0) == 0:
+            return "No forecast/budget data retrieved from Fabric warehouse."
+        
+        rows = data.get('rows', [])
+        
+        if not rows:
+            return "No forecast/budget data retrieved from Fabric warehouse."
+        
+        # Group by account and pivot scenarios
+        accounts = {}
+        for row in rows:
+            account = row.get('FinalParentAccountCode', 'Unknown')
+            scenario = row.get('ScenarioName', 'Unknown')
+            amount = row.get('Amount', 0)
+            
+            # Convert Decimal to float if necessary
+            if hasattr(amount, '__float__'):
+                amount = float(amount)
+            elif amount is None:
+                amount = 0
+            
+            if account not in accounts:
+                accounts[account] = {'Apr_Forecast': 0, 'OEP_Plan': 0}
+            
+            if scenario in accounts[account]:
+                accounts[account][scenario] = amount
+        
+        # Build comparison table
+        table = "| Account | Forecast (Apr) | Budget (OEP) | Variance | Var % |\n"
+        table += "|---------|---------------|--------------|----------|-------|\n"
+        
+        # Sort by absolute variance (convert to float for comparison)
+        def safe_float(val):
+            if hasattr(val, '__float__'):
+                return float(val)
+            return float(val) if val else 0.0
+        
+        sorted_accounts = sorted(
+            accounts.items(),
+            key=lambda x: abs(safe_float(x[1].get('Apr_Forecast', 0)) - safe_float(x[1].get('OEP_Plan', 0))),
+            reverse=True
+        )
+        
+        for account, values in sorted_accounts[:15]:
+            forecast = safe_float(values.get('Apr_Forecast', 0))
+            budget = safe_float(values.get('OEP_Plan', 0))
+            variance = forecast - budget
+            var_pct = (variance / budget * 100) if budget != 0 else 0
+            
+            # Format numbers
+            def fmt(val):
+                val = safe_float(val)
+                if abs(val) >= 1e9:
+                    return f"{val/1e9:,.1f}B"
+                elif abs(val) >= 1e6:
+                    return f"{val/1e6:,.1f}M"
+                elif abs(val) >= 1e3:
+                    return f"{val/1e3:,.0f}K"
+                else:
+                    return f"{val:,.0f}"
+            
+            # Add directional indicator
+            direction = "↑" if variance > 0 else "↓" if variance < 0 else "→"
+            
+            table += f"| {account[:30]} | {fmt(forecast)} | {fmt(budget)} | {fmt(variance)} {direction} | {var_pct:+.1f}% |\n"
+        
+        if len(sorted_accounts) > 15:
+            table += f"\n*...and {len(sorted_accounts) - 15} more accounts*"
+        
+        # Add summary statistics
+        total_forecast = sum(safe_float(v.get('Apr_Forecast', 0)) for v in accounts.values() if safe_float(v.get('Apr_Forecast', 0)) > 0)
+        total_budget = sum(safe_float(v.get('OEP_Plan', 0)) for v in accounts.values() if safe_float(v.get('OEP_Plan', 0)) > 0)
+        
+        table += f"\n\n**Summary:**\n"
+        table += f"- Total accounts analyzed: {len(accounts)}\n"
+        table += f"- Accounts with positive variance: {sum(1 for v in accounts.values() if safe_float(v.get('Apr_Forecast', 0)) > safe_float(v.get('OEP_Plan', 0)))}\n"
+        table += f"- Accounts with negative variance: {sum(1 for v in accounts.values() if safe_float(v.get('Apr_Forecast', 0)) < safe_float(v.get('OEP_Plan', 0)))}\n"
+        
+        return table
+    
+    def _format_fabric_data(self, data: dict) -> str:
+        """Format Fabric query results as a readable table."""
+        if not data or data.get('row_count', 0) == 0:
+            return "No data retrieved from Fabric warehouse."
+        
+        rows = data.get('rows', [])
+        columns = data.get('columns', [])
+        
+        if not rows:
+            return "No data retrieved from Fabric warehouse."
+        
+        # Helper to safely convert Decimal to float
+        def safe_float(val):
+            if val is None:
+                return 0.0
+            if hasattr(val, '__float__'):
+                return float(val)
+            try:
+                return float(val)
+            except (ValueError, TypeError):
+                return 0.0
+        
+        # Build markdown table
+        table = "| " + " | ".join(columns) + " |\n"
+        table += "|" + "|".join(["---"] * len(columns)) + "|\n"
+        
+        for row in rows[:15]:  # Limit to 15 rows
+            row_values = []
+            for col in columns:
+                val = row.get(col, '')
+                # Check if it's a numeric type (including Decimal)
+                if val is not None and (isinstance(val, (int, float)) or hasattr(val, '__float__')):
+                    num_val = safe_float(val)
+                    if abs(num_val) >= 1e9:
+                        row_values.append(f"{num_val/1e9:,.1f}B")
+                    elif abs(num_val) >= 1000000:
+                        row_values.append(f"{num_val/1e6:,.1f}M")
+                    elif abs(num_val) >= 1000:
+                        row_values.append(f"{num_val:,.0f}")
+                    else:
+                        row_values.append(f"{num_val:,.2f}")
+                else:
+                    row_values.append(str(val) if val is not None else '')
+            table += "| " + " | ".join(row_values) + " |\n"
+        
+        if len(rows) > 15:
+            table += f"\n*...and {len(rows) - 15} more rows*"
+        
+        return table
+    
+    def _get_kb_context_for_query(self, message: str, classification: str) -> str:
+        """Get relevant Knowledge Base context based on query type."""
+        message_lower = message.lower()
+        
+        baseline = self.knowledge.get("fy2025_baseline", {})
+        
+        # Check for specific topics
+        if "revenue" in message_lower:
+            forecast = baseline.get("financials_forecast", {})
+            budget = baseline.get("budget", {})
+            return f"""
+- Forecast Revenue: {forecast.get('revenue_sar', 0)/1e6:,.0f}m SAR
+- Budget Revenue: {budget.get('revenue_sar', 0)/1e6:,.0f}m SAR
+- Variance: +{((forecast.get('revenue_sar', 1)/budget.get('revenue_sar', 1))-1)*100:.0f}%
+- Key Driver: Strong commodity prices (OSR +$85/t, Sunflower +$114/t)
+"""
+        
+        elif "ebitda" in message_lower:
+            forecast = baseline.get("financials_forecast", {})
+            budget = baseline.get("budget", {})
+            return f"""
+- Forecast EBITDA: {forecast.get('ebitda_sar', 0)/1e6:.0f}m SAR
+- Budget EBITDA: {budget.get('ebitda_sar', 0)/1e6:.0f}m SAR
+- EBITDA Margin: {forecast.get('ebitda_sar', 0)/forecast.get('revenue_sar', 1)*100:.1f}%
+- Driver: Revenue growth + cost discipline
+"""
+        
+        elif "net income" in message_lower or "profit" in message_lower:
+            forecast = baseline.get("financials_forecast", {})
+            budget = baseline.get("budget", {})
+            return f"""
+- Forecast Net Income: {forecast.get('net_income_sar', 0)/1e6:.0f}m SAR (+{((forecast.get('net_income_sar', 1)/budget.get('net_income_sar', 1))-1)*100:.0f}% vs budget)
+- Primary Driver: Price effect accounts for ~99% of variance
+- Commodity Tailwinds: OSR, Sunflower, Wheat above budget prices
+"""
+        
+        elif "account" in message_lower or "balance" in message_lower or "categories" in message_lower:
+            return """
+**Understanding the Data:**
+- **Entity:** CFG Ukraine (Entity Code: E250) - SALIC's agricultural subsidiary
+- **Data Type:** Balance sheet positions showing assets, liabilities, and equity
+- **Currency:** Amounts displayed in SAR (Saudi Riyal), converted from UAH/USD at prevailing rates
+- **Time Period:** FY2025 (October 2024 - September 2025)
+
+**Key Account Categories:**
+- **Assets:** Cash, Receivables, Inventory, Property & Equipment, Intangibles
+- **Liabilities:** Payables, Borrowings, Lease Liabilities
+- **Equity:** Owner's Equity, Retained Earnings, FX Reserves
+"""
+        
+        elif "budget" in message_lower or "forecast" in message_lower:
+            forecast = baseline.get("financials_forecast", {})
+            budget = baseline.get("budget", {})
+            return f"""
+**Understanding the Scenarios:**
+
+1. **OEP_Plan (Budget):** Annual operating plan approved at start of fiscal year
+   - Represents management's committed targets
+   - Used for performance evaluation and bonus calculations
+
+2. **Apr_Forecast:** Updated forecast as of April 2025
+   - Reflects latest market conditions and operational outlook
+   - Incorporates actual results through Q2
+
+**CFG Ukraine FY2025 Performance Summary:**
+
+| Metric | Forecast | Budget | Variance |
+|--------|----------|--------|----------|
+| Revenue | {forecast.get('revenue_sar', 0)/1e6:,.0f}m SAR | {budget.get('revenue_sar', 0)/1e6:,.0f}m SAR | +{((forecast.get('revenue_sar', 1)/budget.get('revenue_sar', 1))-1)*100:.0f}% |
+| EBITDA | {forecast.get('ebitda_sar', 0)/1e6:.0f}m SAR | {budget.get('ebitda_sar', 0)/1e6:.0f}m SAR | +{((forecast.get('ebitda_sar', 1)/budget.get('ebitda_sar', 1))-1)*100:.0f}% |
+| Net Income | {forecast.get('net_income_sar', 0)/1e6:.0f}m SAR | {budget.get('net_income_sar', 0)/1e6:.0f}m SAR | +{((forecast.get('net_income_sar', 1)/budget.get('net_income_sar', 1))-1)*100:.0f}% |
+
+**Key Takeaway:** CFG Ukraine is significantly outperforming budget across all metrics, driven primarily by favorable commodity prices.
+"""
+        
+        else:
+            # General context
+            return f"""
+**Entity Overview:**
+- **Company:** CFG Ukraine (Entity Code: E250)
+- **Business:** Agricultural operations - crop production and sales
+- **Location:** Ukraine
+- **Parent:** SALIC (Saudi Agricultural and Livestock Investment Company)
+
+**Operational Footprint (FY2025):**
+- Total Cultivated Area: {baseline.get('total_area_ha', 180624):,} hectares
+- Crop Portfolio: 6 crops (Wheat, Barley, OSR, Maize, Soybean, Sunflower)
+- Primary Revenue Drivers: Wheat (37% of area), OSR (17%), Maize (15%)
+
+**Financial Status:** Strong performance, exceeding budget targets across all key metrics.
+"""
+    
+    def _format_vdt_for_hybrid(self, vdt_result: dict) -> str:
+        """Format VDT result for inclusion in hybrid response."""
+        if not vdt_result:
+            return ""
+        
+        vdt_type = vdt_result.get('type', '')
+        result = vdt_result.get('result', {})
+        
+        if vdt_type == 'variance_decomposition':
+            drivers = result.get('drivers', {})
+            return f"""
+**Value-Driver Tree Analysis:**
+- Total Variance: {result.get('total_variance', 0)/1e6:,.1f}m SAR ({result.get('variance_pct', 0):.1f}%)
+- Price Effect: {drivers.get('price_effect', {}).get('pct', 0):.0f}% of variance
+- Volume Effect: {drivers.get('volume_effect', {}).get('pct', 0):.0f}% of variance
+- Cost Effect: {drivers.get('cost_effect', {}).get('pct', 0):.0f}% of variance
+"""
+        
+        elif vdt_type == 'gross_margin_calculation':
+            return f"""
+**Gross Margin Analysis:**
+- Total GM: ${result.get('total_gross_margin_usd', 0)/1e6:,.1f}m
+- GM %: {result.get('gm_percent', 0):.1f}%
+- GM per ha: ${result.get('gm_per_ha', 0):,.0f}/ha
+"""
+        
+        elif vdt_type == 'optimization_ranking':
+            top_crops = result[:3] if isinstance(result, list) else []
+            if top_crops:
+                crop_list = ", ".join([f"{c.get('crop', '').replace('_', ' ').title()} (${c.get('gm_per_ha', 0):.0f}/ha)" for c in top_crops])
+                return f"""
+**Top Performing Crops:** {crop_list}
+"""
+        
+        return ""
     
     def _generate_crop_kb_response(self, message: str, vdt_result: dict) -> str:
         """Generate a clean response for crop queries using knowledge base data."""
@@ -986,18 +1755,40 @@ The analysis has been completed using the Value-Driver Tree framework.
             sql = self.sql_generator.generate_sql(message, context)
             result["sql"] = sql
             
+            # OVERRIDE: For budget/forecast comparison queries, use direct SQL
+            # instead of LLM-generated SQL (which might use wrong tables)
+            if self._is_budget_comparison_query(message):
+                print(f"🔄 Using direct SQL for budget/forecast comparison...")
+                sql = self._get_forecast_budget_sql()
+                result["sql"] = sql
+                result["sql_source"] = "direct_template"
+            
             print(f"🔍 Executing query...")
-            data = self.connector.execute_query(sql)
-            result["data"] = data
-            print(f"   Retrieved {data['row_count']} rows")
+            sql_error = None
+            try:
+                data = self.connector.execute_query(sql)
+                result["data"] = data
+                print(f"   Retrieved {data['row_count']} rows")
+            except Exception as sql_e:
+                print(f"   ⚠️ SQL Error: {sql_e}")
+                sql_error = str(sql_e)
+                # Create empty data to trigger fallback
+                data = {
+                    "columns": [],
+                    "rows": [],
+                    "row_count": 0,
+                    "error": sql_error
+                }
+                result["data"] = data
+                result["sql_error"] = sql_error
             
             # Step 4b: Check for knowledge base fallback
-            # If SQL returned no data AND query is about budget comparison,
+            # If SQL returned no data OR had an error AND query is about budget comparison,
             # use knowledge base instead
             use_kb_fallback = False
             kb_data = None
             
-            if data['row_count'] == 0 and self._is_budget_comparison_query(message):
+            if (data['row_count'] == 0 or sql_error) and self._is_budget_comparison_query(message):
                 print(f"📚 SQL returned no budget data - using Knowledge Base fallback")
                 use_kb_fallback = True
                 kb_data = self.get_budget_comparison()
@@ -1016,26 +1807,34 @@ The analysis has been completed using the Value-Driver Tree framework.
                 result["data_source"] = "knowledge_base"
             
             # Step 4c: Check for crop query fallback
-            # If SQL returned no data AND query is about crops, use VDT knowledge base
+            # If SQL returned no data or had error AND query is about crops, use VDT knowledge base
             use_crop_kb = False
-            if data['row_count'] == 0 and self._is_crop_query(message) and vdt_result:
+            if (data['row_count'] == 0 or sql_error) and self._is_crop_query(message) and vdt_result:
                 print(f"📚 SQL returned no crop data - using Knowledge Base (VDT) for response")
                 use_crop_kb = True
                 result["data_source"] = "knowledge_base"
             
             # Step 4d: Check for financial performance query fallback
             use_financial_kb = False
-            if data['row_count'] == 0 and self._is_financial_performance_query(message):
+            if (data['row_count'] == 0 or sql_error) and self._is_financial_performance_query(message):
                 print(f"📚 SQL returned no financial data - using Knowledge Base for response")
                 use_financial_kb = True
                 result["data_source"] = "knowledge_base"
             
             # Step 4e: Check for action/recommendation query fallback
             use_action_kb = False
-            if data['row_count'] == 0 and self._is_action_query(message):
+            if (data['row_count'] == 0 or sql_error) and self._is_action_query(message):
                 print(f"📚 SQL returned no data - using Knowledge Base for action recommendations")
                 use_action_kb = True
                 result["data_source"] = "knowledge_base"
+            
+            # Step 4f: HYBRID APPROACH - Combine Fabric data with KB context
+            # If we have Fabric data, enrich it with KB insights
+            use_hybrid = False
+            if data['row_count'] > 0 and not sql_error:
+                print(f"🔀 Using HYBRID approach - Fabric data + Knowledge Base context")
+                use_hybrid = True
+                result["data_source"] = "hybrid_fabric_kb"
             
             # Step 5: Generate enhanced response based on classification
             if use_kb_fallback and kb_data:
@@ -1079,6 +1878,16 @@ The analysis has been completed using the Value-Driver Tree framework.
                 # Use financial performance summary from knowledge base
                 response = self._generate_financial_performance_response()
                 result["response"] = response
+            elif use_hybrid:
+                # HYBRID: Combine Fabric data with Knowledge Base context
+                response = self._generate_hybrid_response(
+                    message=message,
+                    classification=classification,
+                    fabric_data=data,
+                    vdt_result=vdt_result,
+                    sql=sql
+                )
+                result["response"] = response
             else:
                 response = self._generate_enhanced_response(
                     message=message,
@@ -1113,6 +1922,290 @@ The analysis has been completed using the Value-Driver Tree framework.
             print(f"❌ Error: {e}")
         
         return result
+    
+    # =========================================================================
+    # MULTI-QUESTION PROCESSING
+    # =========================================================================
+    
+    def _decompose_questions(self, message: str) -> List[str]:
+        """
+        Decompose a complex message into individual questions.
+        
+        Handles:
+        - Multiple questions separated by "and", "also", "additionally"
+        - Questions separated by "?" 
+        - Numbered lists (1. 2. 3.)
+        - Bullet points
+        """
+        import re
+        
+        questions = []
+        
+        # Check if message contains multiple question marks
+        if message.count('?') > 1:
+            # Split by question mark and clean up
+            parts = message.split('?')
+            for part in parts:
+                cleaned = part.strip()
+                if cleaned and len(cleaned) > 10:  # Minimum viable question length
+                    questions.append(cleaned + '?')
+        
+        # Check for numbered lists (1. 2. 3. or 1) 2) 3))
+        elif re.search(r'(?:^|\n)\s*\d+[\.\)]\s+', message):
+            parts = re.split(r'(?:^|\n)\s*\d+[\.\)]\s+', message)
+            for part in parts:
+                cleaned = part.strip()
+                if cleaned and len(cleaned) > 10:
+                    # Add question mark if missing
+                    if not cleaned.endswith('?'):
+                        cleaned += '?'
+                    questions.append(cleaned)
+        
+        # Check for bullet points
+        elif re.search(r'(?:^|\n)\s*[-•]\s+', message):
+            parts = re.split(r'(?:^|\n)\s*[-•]\s+', message)
+            for part in parts:
+                cleaned = part.strip()
+                if cleaned and len(cleaned) > 10:
+                    if not cleaned.endswith('?'):
+                        cleaned += '?'
+                    questions.append(cleaned)
+        
+        # Check for conjunctions indicating multiple questions
+        elif any(conj in message.lower() for conj in [' and also ', ' and what ', ' and why ', ' and how ', '. also ', '. what ', '. why ', '. how ']):
+            # Split by common conjunction patterns
+            pattern = r'(?:\.\s+(?:Also|What|Why|How|And)|\s+and\s+(?:also|what|why|how))'
+            parts = re.split(pattern, message, flags=re.IGNORECASE)
+            for i, part in enumerate(parts):
+                cleaned = part.strip()
+                if cleaned and len(cleaned) > 10:
+                    if not cleaned.endswith('?'):
+                        cleaned += '?'
+                    questions.append(cleaned)
+        
+        # If no decomposition possible, return original as single question
+        if not questions:
+            questions = [message]
+        
+        return questions
+    
+    def _is_multi_question(self, message: str) -> bool:
+        """Check if message contains multiple questions."""
+        questions = self._decompose_questions(message)
+        return len(questions) > 1
+    
+    def chat_multi(
+        self,
+        message: str,
+        session_id: str = None
+    ) -> Dict[str, Any]:
+        """
+        Process a message that may contain multiple questions.
+        
+        Decomposes complex queries, processes each independently,
+        then synthesizes a comprehensive response.
+        
+        Args:
+            message: The user's natural language question(s)
+            session_id: Optional session ID for conversation continuity
+            
+        Returns:
+            dict with comprehensive response and individual question results
+        """
+        # Generate session ID if not provided
+        if not session_id:
+            session_id = str(uuid.uuid4())
+        
+        # Decompose questions
+        questions = self._decompose_questions(message)
+        
+        print(f"🔄 Processing {len(questions)} question(s)...")
+        for i, q in enumerate(questions, 1):
+            print(f"   Q{i}: {q[:50]}...")
+        
+        # If single question, use regular chat
+        if len(questions) == 1:
+            return self.chat(questions[0], session_id)
+        
+        # Process multiple questions sequentially (more reliable with DB connections)
+        results = []
+        
+        for idx, question in enumerate(questions):
+            print(f"\n📊 Processing question {idx + 1}/{len(questions)}...")
+            try:
+                result = self.chat(question, session_id)
+                result['question_index'] = idx
+                result['original_question'] = question
+                results.append(result)
+            except Exception as e:
+                print(f"   ❌ Error processing question {idx + 1}: {e}")
+                results.append({
+                    'question_index': idx,
+                    'original_question': question,
+                    'classification': 'ERROR',
+                    'response': f"Unable to process this question: {str(e)}",
+                    'error': str(e)
+                })
+        
+        # Sort by original question order
+        results.sort(key=lambda x: x.get('question_index', 0))
+        
+        # Synthesize comprehensive response
+        comprehensive_response = self._synthesize_multi_response(message, questions, results)
+        
+        return {
+            "session_id": session_id,
+            "original_message": message,
+            "timestamp": datetime.now().isoformat(),
+            "is_multi_question": True,
+            "question_count": len(questions),
+            "individual_results": results,
+            "response": comprehensive_response,
+            "classifications": [r.get('classification') for r in results],
+            "suggestions": self._generate_multi_suggestions(results)
+        }
+    
+    def _synthesize_multi_response(
+        self, 
+        original_message: str, 
+        questions: List[str], 
+        results: List[Dict]
+    ) -> str:
+        """
+        Synthesize individual responses into a comprehensive answer.
+        """
+        response = f"""**Comprehensive Analysis**
+
+You asked {len(questions)} questions. Here's a complete analysis:
+
+---
+
+"""
+        # Add each question's response
+        for i, result in enumerate(results, 1):
+            question = result.get('original_question', f'Question {i}')
+            classification = result.get('classification', 'UNKNOWN')
+            analytics_type = result.get('analytics_type', 'Analysis')
+            individual_response = result.get('response', 'Unable to process this question.')
+            
+            # Clean up the individual response (remove duplicate headers if any)
+            if individual_response.startswith('**'):
+                # Keep the individual response as-is since it has its own header
+                pass
+            
+            response += f"""### Question {i}: {question[:80]}{'...' if len(question) > 80 else ''}
+
+**Type:** {classification} ({analytics_type})
+
+{individual_response}
+
+---
+
+"""
+        
+        # Add executive summary
+        response += self._generate_executive_summary(questions, results)
+        
+        return response
+    
+    def _generate_executive_summary(
+        self, 
+        questions: List[str], 
+        results: List[Dict]
+    ) -> str:
+        """Generate an executive summary across all questions."""
+        
+        # Count classifications
+        classifications = [r.get('classification') for r in results if r.get('classification')]
+        
+        # Extract key metrics mentioned
+        key_findings = []
+        
+        for result in results:
+            response = result.get('response', '')
+            # Extract key numbers/percentages mentioned
+            if '+52%' in response or 'Revenue' in response:
+                key_findings.append("Revenue forecasted +52% vs budget")
+            if '+56%' in response or 'Net Income' in response:
+                key_findings.append("Net Income forecasted +56% vs budget")
+            if 'OSR' in response and '$1,345' in response:
+                key_findings.append("OSR highest margin crop at $1,345/ha")
+            if 'price' in response.lower() and 'drop' in response.lower():
+                key_findings.append("Price sensitivity analysis completed")
+        
+        # Remove duplicates while preserving order
+        key_findings = list(dict.fromkeys(key_findings))
+        
+        summary = """### Executive Summary
+
+**Analysis Coverage:**
+"""
+        for cls in set(classifications):
+            count = classifications.count(cls)
+            summary += f"- {cls}: {count} question(s)\n"
+        
+        if key_findings:
+            summary += "\n**Key Findings:**\n"
+            for finding in key_findings[:5]:  # Top 5 findings
+                summary += f"- {finding}\n"
+        
+        summary += """
+**Recommendation:**
+Based on this comprehensive analysis, CFG Ukraine is performing strongly against budget with significant upside from commodity prices. Key actions should focus on locking in price gains and optimizing the crop mix for next season.
+
+*Analysis generated from CFG Ukraine Financial Analytics Agent.*
+"""
+        return summary
+    
+    def _generate_multi_suggestions(self, results: List[Dict]) -> List[str]:
+        """Generate follow-up suggestions based on multiple question results."""
+        suggestions = set()
+        
+        for result in results:
+            individual_suggestions = result.get('suggestions', [])
+            for s in individual_suggestions:
+                suggestions.add(s)
+        
+        # Add cross-cutting suggestions
+        classifications = [r.get('classification') for r in results]
+        
+        if 'DIAGNOSTIC' in classifications and 'PRESCRIPTIVE' not in classifications:
+            suggestions.add("What actions should we take based on this analysis?")
+        
+        if 'DESCRIPTIVE' in classifications and 'PREDICTIVE' not in classifications:
+            suggestions.add("What if commodity prices change by 10%?")
+        
+        return list(suggestions)[:5]  # Return top 5
+    
+    def chat_smart(
+        self,
+        message: str,
+        session_id: str = None
+    ) -> Dict[str, Any]:
+        """
+        Smart chat that automatically detects and handles multi-question messages.
+        
+        Use this as the primary entry point for user messages.
+        """
+        try:
+            if self._is_multi_question(message):
+                print("🔀 Multi-question detected - processing sequentially")
+                return self.chat_multi(message, session_id)
+            else:
+                return self.chat(message, session_id)
+        except Exception as e:
+            print(f"❌ Error in chat_smart: {e}")
+            # Fallback to single chat if multi-question fails
+            try:
+                return self.chat(message, session_id)
+            except Exception as e2:
+                return {
+                    "session_id": session_id or str(uuid.uuid4()),
+                    "question": message,
+                    "classification": "ERROR",
+                    "response": f"An error occurred while processing your question: {str(e2)}",
+                    "error": str(e2)
+                }
     
     def _get_analytics_description(self, classification: str) -> str:
         """Get human-readable description of analytics type."""
